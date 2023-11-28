@@ -307,6 +307,153 @@ def group_info():
     except Exception as e:
         response = {'code': 309, 'error': e}
         return jsonify(response)
+    
+
+@app.route('/add_template', methods=['POST'])
+def add_template():
+    try:
+        global db
+        template_bub = db['template_bub']
+        data = request.json
+        template_name = data['template_name']
+        search = template_bub.find_one({'template_name': template_name})
+        if search:
+            response = {'code': 317, 'error': 'Template already created!'}
+            return jsonify(response)
+        description = data['description']
+        template = data['template']
+        create_time = data['create_time']
+        owner = data['owner']
+        status = data['status']
+        new_template = {
+            'template_name':template_name,
+            'description':description,
+            'template':template,
+            'create_time':create_time,
+            'owner':owner,
+            'status':status,
+        }
+        result = template_bub.insert_one(new_template)
+        
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 318, 'error': 'Add template fail'}
+            return jsonify(response)
+
+    except Exception as e:
+        response = {'code': 316, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/show_template', methods=['POST'])
+def show_template():
+    try:
+        global db
+        template_bub = db['template_bub']
+        data = request.json
+        template_name = data['template_name']
+        search = template_bub.find_one({'template_name': template_name})
+        if not search:
+            response = {'code': 319, 'error': 'Template does not exist!'}
+            return jsonify(response)
+        condition = {'template_name': template_name}
+        output = template_bub.find_one(condition)
+        old_template = {
+            'template_name':output['template_name'],
+            'description':output['description'],
+            'template':output['template'],
+            'status':output['status']
+        }
+        response = {'code': 200, 'error': 'success', 'template':old_template}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 320, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/edit_template', methods=['POST'])
+def edit_template():
+    try:
+        global db
+        template_bub = db['template_bub']
+        data = request.json
+        template_name = data['old_template_name']
+        condition = {'template_name': template_name}
+        search = template_bub.find_one({'template_name': template_name})
+        if not search:
+            response = {'code': 319, 'error': 'Template does not exist!'}
+            return jsonify(response)
+        new_name = data['template_name']
+        description = data['description']
+        template = data['template']
+        status = data['status']
+        search['template_name'] = new_name
+        search['description'] = description
+        search['template'] = template
+        search['status'] = status
+        setting = {"$set": search}
+        result = template_bub.update_many(condition, setting)
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 321, 'error': 'Update bot fail'}
+            return jsonify(response)
+    except Exception as e:
+        response = {'code': 322, 'error': e}
+        return jsonify(response)
+
+
+@app.route('/delete_template', methods=['POST'])
+def delete_template():
+    try:
+        global db
+        template_bub = db['template_bub']
+        data = request.json
+        template_name = data['template_name']
+        search = template_bub.find_one({'template_name': template_name})
+        if not search:
+            response = {'code': 323, 'error': 'Template does not exist!'}
+            return jsonify(response)
+        if search['status'] != 'Disable':
+            response = {'code': 326, 'error': 'Only disable template can be deleted!'}
+            return jsonify(response)
+        result = template_bub.delete_many({'template_name': template_name})
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 324, 'error': 'Delete template fail'}
+            return jsonify(response)
+    except Exception as e:
+        response = {'code': 325, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/list_template', methods=['POST'])
+def list_template():
+    try:
+        global db
+        template_bub = db['template_bub']
+        searches = template_bub.find()
+        output = []
+        for i in searches:
+            t = {
+                'template_name':i['template_name'],
+                'description':i['description'],
+                'template':i['template'],
+                'create_time':i['create_time'],
+                'owner':i['owner'],
+                'status':i['status']
+            }
+            output.append(t)
+        response = {'code': 200, 'error': 'success', 'template_list': output}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 326, 'error': e}
+        return jsonify(response)
 
 
 if __name__ == '__main__':

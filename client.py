@@ -44,7 +44,7 @@ if len(sys.argv) > 1:
         data = {'token':'6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c', 'chat_id':'-1002132190433','user_id':'5466032236'}
         url = 'http://127.0.0.1:4000/kick'
         response = requests.post(url, json=data)
-    if test == 'list':
+    if test == 'list_bot':
         url = 'http://127.0.0.1:4000/list_bot'
         response = requests.post(url)
     if test == 'group_info':
@@ -59,8 +59,36 @@ if len(sys.argv) > 1:
         data = {'token':'6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c', 'chat_id':'-1002132190433','new_group_description':'heihei'}
         url = 'http://127.0.0.1:4000/set_group_description'
         response = requests.post(url, json=data, headers=headers)
+    if test == 'add_template':
+        data = {'template_name':'test',
+                'description':'test',
+                'template':'test',
+                'create_time':'test',
+                'owner':'test',
+                'status':'heihei'}
+        url = 'http://127.0.0.1:4000/add_template'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'show_template':
+        data = {'template_name':'test'}
+        url = 'http://127.0.0.1:4000/show_template'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'edit_template':
+        data = {'old_template_name':'test',
+                'template_name' : 'new_name',
+                'description' : 'description',
+                'template' : 'template',
+                'status' : 'Disable'}
+        url = 'http://127.0.0.1:4000/edit_template'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'delete_template':
+        data = {'template_name':'new_name'}
+        url = 'http://127.0.0.1:4000/delete_template'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'list_template':
+        url = 'http://127.0.0.1:4000/list_template'
+        response = requests.post(url)
 else:
     print("No variable provided.")
 
-print(print(json.dumps(json.loads(response.text),  ensure_ascii=False)))
+print(json.dumps(json.loads(response.text),  ensure_ascii=False))
 
