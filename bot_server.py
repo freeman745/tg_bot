@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
-from telegram import Bot, ChatPermissions
+from telegram import Bot, ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 import time
 import json
 import pymongo
+import random
+import multiprocessing
 
 
 app = Flask(__name__)
@@ -12,6 +14,55 @@ app.config['JSON_AS_ASCII'] = False
 db_client = pymongo.MongoClient(host='localhost', port=27017)
 
 db = db_client['telegram']
+
+worker_hub = {}
+
+def auto_delete(chat_id, message_id, token, delete_time):
+    bot = Bot(token)
+    time.sleep(delete_time)
+    bot.delete_message(chat_id=chat_id, message_id=message_id)
+
+
+def send_message_worker(chat_bot_match, message_content, button, send_time, schedule, delete_time):
+    if button:
+        keyboard = []
+        for i in button:
+            keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
+        keyboard = InlineKeyboardMarkup(keyboard)
+
+    if schedule > 0:
+        while True:
+            if time.time() < send_time:
+                continue
+            for chat_id in chat_bot_match:
+                token = chat_bot_match[chat_id]
+                bot = Bot(token)
+                if button:
+                    sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                else:
+                    sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                if delete_time > 0:
+                    worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
+
+                    worker_process.start()
+            time.sleep(schedule)
+    else:
+        while True:
+            if time.time() < send_time:
+                continue
+            for chat_id in chat_bot_match:
+                token = chat_bot_match[chat_id]
+                bot = Bot(token)
+                if button:
+                    sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                else:
+                    sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                if delete_time > 0:
+                    worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
+
+                    worker_process.start()
+            break
+    
 
 # health check
 @app.route('/health', methods=['GET'])
@@ -271,6 +322,7 @@ def group_info():
         token = data['token']
         global db
         bot_hub = db['bot_hub']
+        group_hub = db['group_hub']
         search = bot_hub.find_one({'token': token})
         if not search:
             response = {'code': 315, 'error': 'Bot not exist'}
@@ -281,6 +333,7 @@ def group_info():
         output = []
         for chat_id in group_chat_ids:
             # Get information about the chat (group)
+            query = {"chat_id": chat_id}
             chat_info = bot.get_chat(chat_id)
 
             # Access title and description from the chat_info object
@@ -290,15 +343,19 @@ def group_info():
             member_count = str(bot.get_chat_member_count(chat_id))
             admin_list = []
             admin = bot.get_chat_administrators(chat_id=chat_id)
+            random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
             for i in admin:
                 admin_list.append(i.to_dict())
             t = {'title':group_title, 
                  'description':group_description,
                  'type':group_type,
                  'member_count':member_count,
-                 'admin':admin_list,
-                 'chat_id':chat_id
-                 }
+                 'token':token,
+                 'chat_id':chat_id,
+                 'group_index':random_number
+            }
+            update_data = {"$set": t}
+            group_hub.update_many(query, update_data, upsert=True)
             output.append(t)
 
         response = {'code': 200, 'error': 'success', 'result': output}
@@ -306,6 +363,30 @@ def group_info():
 
     except Exception as e:
         response = {'code': 309, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/member_info', methods=['POST'])
+def member_info():
+    try:
+        data = request.json
+        token = data['token']
+        global db
+        bot_hub = db['bot_hub']
+        search = bot_hub.find_one({'token': token})
+        if not search:
+            response = {'code': 315, 'error': 'Bot not exist'}
+            return jsonify(response)
+        bot = Bot(token)
+        chat_id = data['chat_id']
+        admin_list = []
+        admin = bot.get_chat_administrators(chat_id=chat_id)
+        for i in admin:
+            admin_list.append(i.to_dict())
+        response = {'code': 200, 'error': 'success', 'result': admin_list}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 328, 'error': e}
         return jsonify(response)
     
 
@@ -454,6 +535,204 @@ def list_template():
     except Exception as e:
         response = {'code': 326, 'error': e}
         return jsonify(response)
+    
+
+@app.route('/search_message', methods=['POST'])
+def search_message():
+    try:
+        global db
+        message_bub = db['message_bub']
+        data = request.json
+        message_name = data['message_name']
+        template = data['template']
+        status = data['status']
+        condition = {}
+        if message_name:
+            condition['message_name'] = { '$regex' : message_name, '$options': "i" }
+        if template:
+            condition['template'] = template
+        if status:
+            condition['status'] = status
+        search = message_bub.find(condition)
+        output = []
+        for i in search:
+            t = {
+                'message_name':i['message_name'],
+                'template':i['template'],
+                'owner':i['owner'],
+                'schedule':i['schedule'],
+                'method':i['method'],
+                'create_time':i['create_time'],
+                'send_time':i['send_time'],
+                'end_time':i['end_time'],
+                'delete_time':i['delete_time'],
+                'send_groups':i['send_groups'],
+                'status':i['status'],
+                'button':i['button'],
+                'message_content':i['message_content'],
+                'top':i['top']
+            }
+            output.append(t)
+        response = {'code': 200, 'error': 'success', 'result':output}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 327, 'error': e}
+        return jsonify(response)
+
+
+@app.route('/preview_message', methods=['POST'])
+def preview_message():
+    try:
+        global db
+        bot_hub = db['bot_hub']
+        data = request.json
+
+        message_content = data['message_content']
+        button = data['button']
+        
+        bot_name = data['bot_name']
+        search = bot_hub.find_one({'bot_name': bot_name})
+        if not search:
+            response = {'code': 333, 'error': 'bot name not found'}
+            return jsonify(response)
+        token = search['token']
+
+        bot = Bot(token)
+        updates = bot.get_updates()
+        chat_id = ''
+        for update in updates:
+            if update.message['text'] == 'preview':
+                chat_id = update.message.chat_id
+                user_name = update.message['chat']['first_name']
+                break
+        if not chat_id:
+            response = {'code': 330, 'error': 'User did not send message!'}
+            return jsonify(response)
+        if button:
+            keyboard = []
+            for i in button:
+                keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
+            keyboard = InlineKeyboardMarkup(keyboard)
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+        else:
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+        worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, 60,))
+
+        worker_process.start()
+        response = {'code': 200, 'error': 'success', 'user_name': user_name}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 329, 'error': e}
+        return jsonify(response)
+
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    try:
+        global db
+        message_hub = db['message_bub']
+        group_hub = db['group_hub']
+        data = request.json
+        
+        message_name = data['message_name']
+        template = data['template']
+        owner = data['owner']
+
+        schedule = data['schedule']
+        
+        message_content = data['message_content']
+        button = data['button']
+        
+        create_time = data['create_time']
+        delete_time = data['delete_time']
+        send_time = data['send_time']
+        
+        send_groups = data['send_groups']
+
+        chat_bot_match = {}
+
+        for group in send_groups:
+            chat_id = group_hub.find_one({'title': group})['chat_id']
+            token = group_hub.find_one({'title': group})['token']
+            chat_bot_match[chat_id] = token
+
+        worker_process = multiprocessing.Process(target=send_message_worker,args=(chat_bot_match, message_content, button, send_time, schedule, delete_time,))
+        
+        worker_process.start()
+
+        worker_hub[message_name] = worker_process
+        print(worker_hub)
+
+        response = {'code': 200, 'error': 'success'}
+        if time.time() >= send_time:
+            method = 'rightnow'
+        else:
+            method = 'schedule'
+        in_db = {
+            'message_name': message_name,
+            'template': template,
+            'owner': owner,
+            'schedule': schedule,
+            'method': method,
+            'create_time': create_time,
+            'send_time': send_time,
+            'delete_time': delete_time,
+            'send_groups': send_groups,
+            'status':''
+        }
+        message_hub.insert_one(in_db)
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 334, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/kill_message', methods=['POST'])
+def kill_message():
+    data = request.json
+    global worker_hub
+    print(worker_hub)
+    message_name = data['message_name']
+    worker = worker_hub[message_name]
+    try:
+        worker.terminate()
+        response = {'code': 200, 'error': 'success'}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 335, 'error': e}
+        return jsonify(response)
+    
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    user_name = data['user_name']
+    password = data['password']
+    global db
+    user_hub = db['user_hub']
+    search = user_hub.find_one({'user_name': user_name, 'password': password})
+    if search:
+        response = {'code': 200, 'error': 'success'}
+    else:
+        response = {'code': 331, 'error': 'user name or password incorrect!'}
+    
+    return jsonify(response)
+    
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    user_name = data['user_name']
+    password = data['password']
+    global db
+    user_hub = db['user_hub']
+    if user_hub.find_one({'user_name': user_name}):
+        response = {'code': 332, 'error': 'user name exist!'}
+        return jsonify(response)
+    user_hub.insert_one({'user_name': user_name, 'password': password})
+    response = {'code': 200, 'error': 'success'}
+
+    return jsonify(response)
 
 
 if __name__ == '__main__':

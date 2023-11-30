@@ -87,6 +87,27 @@ if len(sys.argv) > 1:
     if test == 'list_template':
         url = 'http://127.0.0.1:4000/list_template'
         response = requests.post(url)
+    if test == 'preview_message':
+        data = {'message_content':'hello','button':[{'button_name':'test1', 'url':'www.baidu.com'}, {'button_name':'test2', 'url':'www.google.com'}]}
+        url = 'http://127.0.0.1:4000/preview_message'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'send_message':
+        data = {'message_name':'test',
+                'message_content':'hello',
+                'button':[{'button_name':'test1', 'url':'www.baidu.com'}, {'button_name':'test2', 'url':'www.google.com'}],
+                'template':'t',
+                'owner':'t',
+                'schedule':10,
+                'create_time':0,
+                'delete_time':3,
+                'send_time':0,
+                'send_groups':['heiheihei']}
+        url = 'http://127.0.0.1:4000/send_message'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'kill_message':
+        data = {'message_name':'test'}
+        url = 'http://127.0.0.1:4000/kill_message'
+        response = requests.post(url, json=data, headers=headers)
 else:
     print("No variable provided.")
 

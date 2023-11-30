@@ -3,16 +3,19 @@ import pymongo
 
 db_client = pymongo.MongoClient(host='localhost', port=27017)
 
-db = db_client['test']
+db = db_client['telegram']
 
-bot_hub = db['test']
+group_hub = db['group_hub']
+
+#bot_hub = db['test']
 
 #s = {'token': '111','name':'fdgh'}
 #result = bot_hub.insert_one(s)
 #print(result)
 
 #result = bot_hub.find_one({'token': '333'})
-result = bot_hub.find()
+#result = bot_hub.find({'name': { '$regex' : 'FD', '$options': "i" }, 'token':''})
+result = group_hub.find()
 '''
 if result:
     print(result['name'])
