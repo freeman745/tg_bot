@@ -437,7 +437,7 @@ def show_template():
         template_name = data['template_name']
         search = template_bub.find_one({'template_name': template_name})
         if not search:
-            response = {'code': 319, 'error': 'Template does not exist!'}
+            response = {'code': 319, 'error': 'Template does not exist!', 'template':{}}
             return jsonify(response)
         condition = {'template_name': template_name}
         output = template_bub.find_one(condition)
@@ -480,7 +480,7 @@ def edit_template():
             response = {'code': 200, 'error': 'success'}
             return jsonify(response)
         else:
-            response = {'code': 321, 'error': 'Update bot fail'}
+            response = {'code': 321, 'error': 'Update template fail'}
             return jsonify(response)
     except Exception as e:
         response = {'code': 322, 'error': e}
@@ -533,7 +533,7 @@ def list_template():
         response = {'code': 200, 'error': 'success', 'template_list': output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 326, 'error': e}
+        response = {'code': 326, 'error': e, 'template_list': []}
         return jsonify(response)
     
 
@@ -569,14 +569,13 @@ def search_message():
                 'send_groups':i['send_groups'],
                 'status':i['status'],
                 'button':i['button'],
-                'message_content':i['message_content'],
-                'top':i['top']
+                'message_content':i['message_content']
             }
             output.append(t)
         response = {'code': 200, 'error': 'success', 'result':output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 327, 'error': e}
+        response = {'code': 327, 'error': e, 'result':[]}
         return jsonify(response)
 
 
@@ -593,7 +592,7 @@ def preview_message():
         bot_name = data['bot_name']
         search = bot_hub.find_one({'bot_name': bot_name})
         if not search:
-            response = {'code': 333, 'error': 'bot name not found'}
+            response = {'code': 333, 'error': 'bot name not found', 'user_name': ''}
             return jsonify(response)
         token = search['token']
 
@@ -606,7 +605,7 @@ def preview_message():
                 user_name = update.message['chat']['first_name']
                 break
         if not chat_id:
-            response = {'code': 330, 'error': 'User did not send message!'}
+            response = {'code': 330, 'error': 'User did not send message!', 'user_name': ''}
             return jsonify(response)
         if button:
             keyboard = []
@@ -622,7 +621,7 @@ def preview_message():
         response = {'code': 200, 'error': 'success', 'user_name': user_name}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 329, 'error': e}
+        response = {'code': 329, 'error': e, 'user_name': ''}
         return jsonify(response)
 
 
@@ -691,7 +690,6 @@ def send_message():
 def kill_message():
     data = request.json
     global worker_hub
-    print(worker_hub)
     message_name = data['message_name']
     worker = worker_hub[message_name]
     try:
