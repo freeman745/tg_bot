@@ -67,7 +67,8 @@ def send_message_worker(chat_bot_match, message_content, button, send_time, sche
 # health check
 @app.route('/health', methods=['GET'])
 def health_check():
-    return 'OK', 200
+    response = {'code': 200, 'error': 'success'}
+    return jsonify(response)
 
 
 @app.route('/create_bot', methods=['POST'])
@@ -103,7 +104,7 @@ def create_bot():
             response = {'code': 311, 'error': 'Add bot fail'}
             return jsonify(response)
     except Exception as e:
-        response = {'code': 301, 'error': e}
+        response = {'code': 301, 'error': str(e)}
         return jsonify(response)
     
 
@@ -122,7 +123,7 @@ def delete_bot():
             response = {'code': 312, 'error': 'Delete bot fail'}
             return jsonify(response)
     except Exception as e:
-        response = {'code': 302, 'error': e}
+        response = {'code': 302, 'error': str(e)}
         return jsonify(response)
     
 
@@ -152,7 +153,7 @@ def edit_bot():
             response = {'code': 313, 'error': 'Update bot fail'}
             return jsonify(response)
     except Exception as e:
-        response = {'code': 314, 'error': e}
+        response = {'code': 314, 'error': str(e)}
         return jsonify(response)
 
 
@@ -186,7 +187,7 @@ def ban():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 303, 'error': e}
+        response = {'code': 303, 'error': str(e)}
         return jsonify(response)
     
 
@@ -219,7 +220,7 @@ def unban():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 304, 'error': e}
+        response = {'code': 304, 'error': str(e)}
         return jsonify(response)
     
 
@@ -241,7 +242,7 @@ def kick():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 305, 'error': e}
+        response = {'code': 305, 'error': str(e)}
         return jsonify(response)
 
 
@@ -264,7 +265,7 @@ def set_group_name():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 306, 'error': e}
+        response = {'code': 306, 'error': str(e)}
         return jsonify(response)
 
 
@@ -287,7 +288,7 @@ def set_group_description():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 307, 'error': e}
+        response = {'code': 307, 'error': str(e)}
         return jsonify(response)
 
 
@@ -311,7 +312,7 @@ def list_bot():
         response = {'code': 200, 'error': 'success', 'bot_list': output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 308, 'error': e}
+        response = {'code': 308, 'error': str(e)}
         return jsonify(response)
     
 
@@ -362,7 +363,7 @@ def group_info():
         return jsonify(response)
 
     except Exception as e:
-        response = {'code': 309, 'error': e}
+        response = {'code': 309, 'error': str(e)}
         return jsonify(response)
     
 
@@ -386,7 +387,7 @@ def member_info():
         response = {'code': 200, 'error': 'success', 'result': admin_list}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 328, 'error': e}
+        response = {'code': 328, 'error': str(e), 'result':[]}
         return jsonify(response)
     
 
@@ -424,7 +425,7 @@ def add_template():
             return jsonify(response)
 
     except Exception as e:
-        response = {'code': 316, 'error': e}
+        response = {'code': 316, 'error': str(e)}
         return jsonify(response)
     
 
@@ -450,7 +451,7 @@ def show_template():
         response = {'code': 200, 'error': 'success', 'template':old_template}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 320, 'error': e}
+        response = {'code': 320, 'error': str(e)}
         return jsonify(response)
     
 
@@ -483,7 +484,7 @@ def edit_template():
             response = {'code': 321, 'error': 'Update template fail'}
             return jsonify(response)
     except Exception as e:
-        response = {'code': 322, 'error': e}
+        response = {'code': 322, 'error': str(e)}
         return jsonify(response)
 
 
@@ -509,7 +510,7 @@ def delete_template():
             response = {'code': 324, 'error': 'Delete template fail'}
             return jsonify(response)
     except Exception as e:
-        response = {'code': 325, 'error': e}
+        response = {'code': 325, 'error': str(e)}
         return jsonify(response)
     
 
@@ -533,7 +534,7 @@ def list_template():
         response = {'code': 200, 'error': 'success', 'template_list': output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 326, 'error': e, 'template_list': []}
+        response = {'code': 326, 'error': str(e), 'template_list': []}
         return jsonify(response)
     
 
@@ -575,7 +576,7 @@ def search_message():
         response = {'code': 200, 'error': 'success', 'result':output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 327, 'error': e, 'result':[]}
+        response = {'code': 327, 'error': str(e), 'result':[]}
         return jsonify(response)
 
 
@@ -621,7 +622,7 @@ def preview_message():
         response = {'code': 200, 'error': 'success', 'user_name': user_name}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 329, 'error': e, 'user_name': ''}
+        response = {'code': 329, 'error': str(e), 'user_name': ''}
         return jsonify(response)
 
 
@@ -682,7 +683,7 @@ def send_message():
         message_hub.insert_one(in_db)
         return jsonify(response)
     except Exception as e:
-        response = {'code': 334, 'error': e}
+        response = {'code': 334, 'error': str(e)}
         return jsonify(response)
     
 
@@ -697,7 +698,7 @@ def kill_message():
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 335, 'error': e}
+        response = {'code': 335, 'error': str(e)}
         return jsonify(response)
     
 
