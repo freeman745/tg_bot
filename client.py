@@ -109,13 +109,18 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/kill_message'
         response = requests.post(url, json=data, headers=headers)
     if test == 'login':
-        data = {'user_name':'admin', 'password':'admin'}
+        data = {'user_name':'admin', 'password':'admin', 'captcha':'eOnA'}
         url = 'http://127.0.0.1:4000/login'
         response = requests.post(url, json=data, headers=headers)
     if test == 'register':
         data = {'user_name':'admin', 'password':'admin', 'isAdmin':'True'}
         url = 'http://127.0.0.1:4000/register'
         response = requests.post(url, json=data, headers=headers)
+    if test == 'captcha':
+        url = 'http://127.0.0.1:4000/captcha'
+        response = requests.get(url)
+        with open('t.png', 'wb') as f:
+            f.write(response.content)
 else:
     print("No variable provided.")
 

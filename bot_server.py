@@ -5,6 +5,9 @@ import json
 import pymongo
 import random
 import multiprocessing
+import io
+from captcha.image import ImageCaptcha
+import string
 
 
 app = Flask(__name__)
@@ -16,6 +19,8 @@ db_client = pymongo.MongoClient(host='localhost', port=27017)
 db = db_client['telegram']
 
 worker_hub = {}
+
+captcha_save = ''
 
 def auto_delete(chat_id, message_id, token, delete_time):
     bot = Bot(token)
@@ -707,11 +712,15 @@ def login():
     data = request.json
     user_name = data['user_name']
     password = data['password']
-    global db
+    cap = str(data['captcha'])
+    global db, captcha_save
     user_hub = db['user_hub']
     search = user_hub.find_one({'user_name': user_name, 'password': password})
     if search:
-        response = {'code': 200, 'error': 'success', 'isAdmin': search['isAdmin']}
+        if cap.upper() == captcha_save.upper():
+            response = {'code': 200, 'error': 'success', 'isAdmin': search['isAdmin']}
+        else:
+            response = {'code': 336, 'error': 'captcha error!'}
     else:
         response = {'code': 331, 'error': 'user name or password incorrect!'}
     
@@ -733,6 +742,22 @@ def register():
     response = {'code': 200, 'error': 'success'}
 
     return jsonify(response)
+
+
+@app.route('/captcha')
+def captcha():
+    chr_all = string.ascii_letters + string.digits
+    global captcha_save
+    captcha_save = ''.join(random.sample(chr_all, 4))
+    image = ImageCaptcha().generate_image(captcha_save)
+
+    buf = io.BytesIO()
+    image.save(buf, format='PNG')
+    buf.seek(0)
+    return buf.getvalue(), 200, {
+        'Content-Type': 'image/png',
+        'Content-Length': str(len(buf.getvalue()))
+    }
 
 
 if __name__ == '__main__':
