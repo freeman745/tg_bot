@@ -108,6 +108,14 @@ if len(sys.argv) > 1:
         data = {'message_name':'test'}
         url = 'http://127.0.0.1:4000/kill_message'
         response = requests.post(url, json=data, headers=headers)
+    if test == 'login':
+        data = {'user_name':'admin', 'password':'admin'}
+        url = 'http://127.0.0.1:4000/login'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'register':
+        data = {'user_name':'admin', 'password':'admin'}
+        url = 'http://127.0.0.1:4000/register'
+        response = requests.post(url, json=data, headers=headers)
 else:
     print("No variable provided.")
 
