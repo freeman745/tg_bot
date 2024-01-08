@@ -711,7 +711,7 @@ def login():
     user_hub = db['user_hub']
     search = user_hub.find_one({'user_name': user_name, 'password': password})
     if search:
-        response = {'code': 200, 'error': 'success'}
+        response = {'code': 200, 'error': 'success', 'isAdmin': search['isAdmin']}
     else:
         response = {'code': 331, 'error': 'user name or password incorrect!'}
     
@@ -723,12 +723,13 @@ def register():
     data = request.json
     user_name = data['user_name']
     password = data['password']
+    isAdmin = data['isAdmin']
     global db
     user_hub = db['user_hub']
     if user_hub.find_one({'user_name': user_name}):
         response = {'code': 332, 'error': 'user name exist!'}
         return jsonify(response)
-    user_hub.insert_one({'user_name': user_name, 'password': password})
+    user_hub.insert_one({'user_name': user_name, 'password': password, 'isAdmin': isAdmin})
     response = {'code': 200, 'error': 'success'}
 
     return jsonify(response)
