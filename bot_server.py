@@ -372,6 +372,30 @@ def group_info():
         return jsonify(response)
     
 
+@app.route('/list_group', methods=['POST'])
+def list_group():
+    try:
+        global db
+        template_bub = db['group_hub']
+        searches = template_bub.find()
+        output = []
+        for i in searches:
+            t = {
+                'title':i['title'],
+                'description':i['description'],
+                'type':i['type'],
+                'member_count':i['member_count'],
+                'chat_id':i['chat_id'],
+                'group_index':i['group_index']
+            }
+            output.append(t)
+        response = {'code': 200, 'error': 'success', 'group_list': output}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 337, 'error': str(e), 'group_list': []}
+        return jsonify(response)
+    
+
 @app.route('/member_info', methods=['POST'])
 def member_info():
     try:
@@ -505,7 +529,7 @@ def delete_template():
             response = {'code': 323, 'error': 'Template does not exist!'}
             return jsonify(response)
         if search['status'] != 'Disable':
-            response = {'code': 326, 'error': 'Only disable template can be deleted!'}
+            response = {'code': 338, 'error': 'Only disable template can be deleted!'}
             return jsonify(response)
         result = template_bub.delete_many({'template_name': template_name})
         if result:
