@@ -399,6 +399,7 @@ def list_group():
                 }
                 update_data = {"$set": t}
                 group_hub.update_many(query, update_data, upsert=True)
+                t['group_index'] = group_hub.find_one(query).get('group_index')
                 output.append(t)
         response = {'code': 200, 'error': 'success', 'group_list': output}
         return jsonify(response)
