@@ -252,14 +252,16 @@ def kick():
 
 
 @app.route('/set_group_name', methods=['POST'])
-def set_group_name():
+def set_group_name_description():
     try:
         data = request.json
         chat_id = data['chat_id']
         new_name = data['new_group_name']  # Replace with your desired group name
+        new_description = data['new_group_description']
         token = data['token']
         global db
         bot_hub = db['bot_hub']
+        group_hub = db['group_hub']
         search = bot_hub.find_one({'token': token})
         if not search:
             response = {'code': 315, 'error': 'Bot not exist'}
@@ -267,33 +269,19 @@ def set_group_name():
         bot = Bot(token)
         # Set new group name
         bot.set_chat_title(chat_id, new_name)
+        bot.set_chat_description(chat_id, new_description)
+        filter_condition = {"chat_id": chat_id}
+        update_data = {
+                        "$set": {
+                                "title": new_name,
+                                "description": new_description
+                                }
+                    }
+        result = group_hub.update_one(filter_condition, update_data)
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
         response = {'code': 306, 'error': str(e)}
-        return jsonify(response)
-
-
-@app.route('/set_group_description', methods=['POST'])
-def set_group_description():
-    try:
-        data = request.json
-        chat_id = data['chat_id']
-        new_description = data['new_group_description']  # Replace with your desired group description
-        token = data['token']
-        global db
-        bot_hub = db['bot_hub']
-        search = bot_hub.find_one({'token': token})
-        if not search:
-            response = {'code': 315, 'error': 'Bot not exist'}
-            return jsonify(response)
-        bot = Bot(token)
-        # Set new group description
-        bot.set_chat_description(chat_id, new_description)
-        response = {'code': 200, 'error': 'success'}
-        return jsonify(response)
-    except Exception as e:
-        response = {'code': 307, 'error': str(e)}
         return jsonify(response)
 
 
@@ -376,23 +364,46 @@ def group_info():
 def list_group():
     try:
         global db
-        template_bub = db['group_hub']
-        searches = template_bub.find()
+        bot_hub = db['bot_hub']
+        searches = bot_hub.find()
+        output = []
+        group_hub = db['group_hub']
         output = []
         for i in searches:
-            t = {
-                'title':i['title'],
-                'description':i['description'],
-                'type':i['type'],
-                'member_count':i['member_count'],
-                'chat_id':i['chat_id'],
-                'group_index':i['group_index']
-            }
-            output.append(t)
+            token = i['token']
+            bot = Bot(token)
+            updates = bot.get_updates()
+            group_chat_ids = list(set([update.message.chat_id for update in updates if update.message and update.message.chat.type == 'supergroup']))
+            for chat_id in group_chat_ids:
+                # Get information about the chat (group)
+                query = {"chat_id": chat_id}
+                chat_info = bot.get_chat(chat_id)
+
+                # Access title and description from the chat_info object
+                group_title = str(chat_info.title)
+                group_description = str(chat_info.description)
+                group_type = str(chat_info.type)
+                member_count = str(bot.get_chat_member_count(chat_id))
+                admin_list = []
+                admin = bot.get_chat_administrators(chat_id=chat_id)
+                for j in admin:
+                    admin_list.append(j.to_dict())
+                
+                t = {
+                    'title':group_title,
+                    'description':group_description,
+                    'type':group_type,
+                    'member_count':member_count,
+                    'chat_id':chat_id,
+                    'token':token
+                }
+                update_data = {"$set": t}
+                group_hub.update_many(query, update_data, upsert=True)
+                output.append(t)
         response = {'code': 200, 'error': 'success', 'group_list': output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 337, 'error': str(e), 'group_list': []}
+        response = {'code': 307, 'error': str(e), 'group_list': []}
         return jsonify(response)
     
 
