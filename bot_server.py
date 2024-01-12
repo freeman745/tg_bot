@@ -796,6 +796,25 @@ def captcha():
     }
 
 
+@app.route('/list_user')
+def list_user():
+    try:
+        global db
+        user_hub = db['user_hub']
+        searches = user_hub.find()
+        output = []
+        for i in searches:
+            t = {
+                'user_name' : i['user_name']
+                }
+            output.append(t)
+        response = {'code': 200, 'error': 'success', 'user_list': output}
+        return jsonify(response)
+    except Exception as e:
+        response = {'code': 339, 'error': str(e)}
+        return jsonify(response)
+
+
 if __name__ == '__main__':
     ip = '0.0.0.0'
     port = '4000'

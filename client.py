@@ -122,6 +122,9 @@ if len(sys.argv) > 1:
         response = requests.get(url)
         with open('t.png', 'wb') as f:
             f.write(response.content)
+    if test == 'list_user':
+        url = 'http://127.0.0.1:4000/list_user'
+        response = requests.get(url)
 else:
     print("No variable provided.")
 
