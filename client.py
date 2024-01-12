@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     if test == 'create':
         new_bot = {'bot_name' : 'test',
                    'bot_user_name' : 'test',
-                   'token' : '6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c',
+                   'token' : '6827752624:AAGOc-IO8QlQE3vxfB-4j5W2a2MTAHcT67E',
                    'create_time' : 'test',
                    'owner' : 'test',
                    'bot_address' : 'test'}
@@ -48,7 +48,8 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/list_bot'
         response = requests.post(url)
     if test == 'group_info':
-        data = {'token': '6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c'}
+        #data = {'token': '6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c'}
+        data = {'token': '6827752624:AAGOc-IO8QlQE3vxfB-4j5W2a2MTAHcT67E'}
         url = 'http://127.0.0.1:4000/group_info'
         response = requests.post(url, json=data, headers=headers)
     if test == 'set_group_name':
