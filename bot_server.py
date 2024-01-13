@@ -610,6 +610,7 @@ def search_message():
         output = []
         for i in search:
             t = {
+                'message_id':i['message_id'],
                 'message_name':i['message_name'],
                 'template':i['template'],
                 'owner':i['owner'],
@@ -701,6 +702,8 @@ def send_message():
         
         send_groups = data['send_groups']
 
+        message_id = ''.join([str(random.randrange(10)) for _ in range(12)])
+
         chat_bot_match = {}
 
         for group in send_groups:
@@ -712,7 +715,7 @@ def send_message():
         
         worker_process.start()
 
-        worker_hub[message_name] = worker_process
+        worker_hub[message_id] = worker_process
         print(worker_hub)
 
         response = {'code': 200, 'error': 'success'}
@@ -721,6 +724,7 @@ def send_message():
         else:
             method = 'schedule'
         in_db = {
+            'message_id': message_id,
             'message_name': message_name,
             'template': template,
             'owner': owner,
@@ -743,8 +747,8 @@ def send_message():
 def kill_message():
     data = request.json
     global worker_hub
-    message_name = data['message_name']
-    worker = worker_hub[message_name]
+    message_id = data['message_id']
+    worker = worker_hub[message_id]
     try:
         worker.terminate()
         response = {'code': 200, 'error': 'success'}
