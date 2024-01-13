@@ -550,7 +550,7 @@ def delete_template():
         if not search:
             response = {'code': 323, 'error': 'Template does not exist!'}
             return jsonify(response)
-        if search['status'] != 'Disable':
+        if search['status'] != '禁用':
             response = {'code': 338, 'error': 'Only disable template can be deleted!'}
             return jsonify(response)
         result = template_bub.delete_many({'template_id': template_id})
