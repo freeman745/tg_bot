@@ -251,7 +251,7 @@ def kick():
         return jsonify(response)
 
 
-@app.route('/set_group_name', methods=['POST'])
+@app.route('/set_group_name_description', methods=['POST'])
 def set_group_name_description():
     try:
         data = request.json
@@ -811,7 +811,7 @@ def list_user():
         response = {'code': 200, 'error': 'success', 'user_list': output}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 339, 'error': str(e)}
+        response = {'code': 308, 'error': str(e)}
         return jsonify(response)
 
 

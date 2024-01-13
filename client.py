@@ -125,6 +125,9 @@ if len(sys.argv) > 1:
     if test == 'list_user':
         url = 'http://127.0.0.1:4000/list_user'
         response = requests.get(url)
+    if test == 'list_group':
+        url = 'http://127.0.0.1:4000/list_group'
+        response = requests.post(url)
 else:
     print("No variable provided.")
 
