@@ -455,6 +455,7 @@ def add_template():
         create_time = data['create_time']
         owner = data['owner']
         status = data['status']
+        template_id = ''.join([str(random.randrange(10)) for _ in range(12)])
         new_template = {
             'template_name':template_name,
             'description':description,
@@ -462,6 +463,7 @@ def add_template():
             'create_time':create_time,
             'owner':owner,
             'status':status,
+            'template_id':template_id
         }
         result = template_bub.insert_one(new_template)
         
@@ -494,7 +496,8 @@ def show_template():
             'template_name':output['template_name'],
             'description':output['description'],
             'template':output['template'],
-            'status':output['status']
+            'status':output['status'],
+            'template_id':output['template_id']
         }
         response = {'code': 200, 'error': 'success', 'template':old_template}
         return jsonify(response)
@@ -509,9 +512,9 @@ def edit_template():
         global db
         template_bub = db['template_bub']
         data = request.json
-        template_name = data['old_template_name']
-        condition = {'template_name': template_name}
-        search = template_bub.find_one({'template_name': template_name})
+        template_id = data['template_id']
+        condition = {'template_id': template_id}
+        search = template_bub.find_one(condition)
         if not search:
             response = {'code': 319, 'error': 'Template does not exist!'}
             return jsonify(response)
@@ -542,15 +545,15 @@ def delete_template():
         global db
         template_bub = db['template_bub']
         data = request.json
-        template_name = data['template_name']
-        search = template_bub.find_one({'template_name': template_name})
+        template_id = data['template_id']
+        search = template_bub.find_one({'template_id': template_id})
         if not search:
             response = {'code': 323, 'error': 'Template does not exist!'}
             return jsonify(response)
         if search['status'] != 'Disable':
             response = {'code': 338, 'error': 'Only disable template can be deleted!'}
             return jsonify(response)
-        result = template_bub.delete_many({'template_name': template_name})
+        result = template_bub.delete_many({'template_id': template_id})
         if result:
             response = {'code': 200, 'error': 'success'}
             return jsonify(response)
@@ -576,7 +579,8 @@ def list_template():
                 'template':i['template'],
                 'create_time':i['create_time'],
                 'owner':i['owner'],
-                'status':i['status']
+                'status':i['status'],
+                'template_id':i['template_id']
             }
             output.append(t)
         response = {'code': 200, 'error': 'success', 'template_list': output}
