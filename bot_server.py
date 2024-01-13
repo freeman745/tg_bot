@@ -269,7 +269,14 @@ def set_group_name_description():
         bot = Bot(token)
         # Set new group name
         bot.set_chat_title(chat_id, new_name)
-        bot.set_chat_description(chat_id, new_description)
+        try:
+            bot.set_chat_description(chat_id, new_description)
+        except Exception as e:
+            if 'modified' in str(e):
+                pass
+            else:
+                response = {'code': 339, 'error': str(e)}
+                return jsonify(response)
         filter_condition = {"chat_id": chat_id}
         update_data = {
                         "$set": {

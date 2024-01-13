@@ -53,8 +53,8 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/group_info'
         response = requests.post(url, json=data, headers=headers)
     if test == 'set_group_name':
-        data = {'token':'6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c', 'chat_id':'-1002132190433','new_group_name':'heiheihei'}
-        url = 'http://127.0.0.1:4000/set_group_name'
+        data = {'token':'6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c', 'chat_id':'-1002132190433','new_group_name':'heiheihei','new_group_description':'heihei'}
+        url = 'http://127.0.0.1:4000/set_group_name_description'
         response = requests.post(url, json=data, headers=headers)
     if test == 'set_group_des':
         data = {'token':'6928667476:AAH26L8dcywZnNTWVyOrBH499z56OpNbd5c', 'chat_id':'-1002132190433','new_group_description':'heihei'}
