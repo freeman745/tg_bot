@@ -28,7 +28,9 @@ def auto_delete(chat_id, message_id, token, delete_time):
     bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 
-def send_message_worker(chat_bot_match, message_content, button, send_time, schedule, delete_time):
+def send_message_worker(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time):
+    global db
+    message_hub = db['message_hub']
     if button:
         keyboard = []
         for i in button:
@@ -50,6 +52,9 @@ def send_message_worker(chat_bot_match, message_content, button, send_time, sche
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
                     worker_process.start()
+            condition = {"message_id": message_id}
+            update_data = {"$set": {"status": "已发送"}}
+            message_hub.update_one(condition, update_data)
             time.sleep(schedule)
     else:
         while True:
@@ -66,6 +71,9 @@ def send_message_worker(chat_bot_match, message_content, button, send_time, sche
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
                     worker_process.start()
+            condition = {"message_id": message_id}
+            update_data = {"$set": {"status": "已发送"}}
+            message_hub.update_one(condition, update_data)
             break
     
 
@@ -711,12 +719,12 @@ def send_message():
             token = group_hub.find_one({'title': group})['token']
             chat_bot_match[chat_id] = token
 
-        worker_process = multiprocessing.Process(target=send_message_worker,args=(chat_bot_match, message_content, button, send_time, schedule, delete_time,))
+        worker_process = multiprocessing.Process(target=send_message_worker,args=(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time,))
         
         worker_process.start()
 
         worker_hub[message_id] = worker_process
-        print(worker_hub)
+        #print(worker_hub)
 
         response = {'code': 200, 'error': 'success'}
         if time.time() >= send_time:
@@ -733,9 +741,12 @@ def send_message():
             'create_time': create_time,
             'send_time': send_time,
             'delete_time': delete_time,
-            'send_groups': send_groups,
-            'status':''
+            'send_groups': send_groups
         }
+        if send_time <= time.time():
+            in_db['status'] = '已发送'
+        else:
+            in_db['status'] = '待发送'
         message_hub.insert_one(in_db)
         return jsonify(response)
     except Exception as e:
@@ -747,14 +758,45 @@ def send_message():
 def kill_message():
     data = request.json
     global worker_hub
+    global db
+    message_hub = db['message_bub']
     message_id = data['message_id']
     worker = worker_hub[message_id]
     try:
         worker.terminate()
+        condition = {"message_id": message_id}
+        update_data = {"$set": {"status": "已取消"}}
+        message_hub.update_one(condition, update_data)
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
     except Exception as e:
         response = {'code': 335, 'error': str(e)}
+        return jsonify(response)
+    
+
+@app.route('/delete_message', methods=['POST'])
+def delete_message():
+    try:
+        data = request.json
+        global db
+        message_hub = db['message_bub']
+        message_id = data['message_id']
+        search = message_hub.find_one({'message_id': message_id})
+        if not search:
+            response = {'code': 340, 'error': 'Message does not exist!'}
+            return jsonify(response)
+        if search['status'] != '已发送' or search['status'] != '已取消':
+            response = {'code': 341, 'error': 'Only sent or canceled message can be deleted!'}
+            return jsonify(response)
+        result = message_hub.delete_many({'template_id': message_id})
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 342, 'error': 'Delete message fail'}
+            return jsonify(response)
+    except Exception as e:
+        response = {'code': 343, 'error': str(e)}
         return jsonify(response)
     
 
