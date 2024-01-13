@@ -74,7 +74,7 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/show_template'
         response = requests.post(url, json=data, headers=headers)
     if test == 'edit_template':
-        data = {'old_template_name':'test',
+        data = {'template_id':'test',
                 'template_name' : 'new_name',
                 'description' : 'description',
                 'template' : 'template',
@@ -82,7 +82,7 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/edit_template'
         response = requests.post(url, json=data, headers=headers)
     if test == 'delete_template':
-        data = {'template_name':'new_name'}
+        data = {'template_id':'test'}
         url = 'http://127.0.0.1:4000/delete_template'
         response = requests.post(url, json=data, headers=headers)
     if test == 'list_template':

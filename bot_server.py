@@ -485,12 +485,12 @@ def show_template():
         global db
         template_bub = db['template_bub']
         data = request.json
-        template_name = data['template_name']
-        search = template_bub.find_one({'template_name': template_name})
+        template_id = data['template_id']
+        condition = {'template_id': template_id}
+        search = template_bub.find_one(condition)
         if not search:
             response = {'code': 319, 'error': 'Template does not exist!', 'template':{}}
             return jsonify(response)
-        condition = {'template_name': template_name}
         output = template_bub.find_one(condition)
         old_template = {
             'template_name':output['template_name'],
