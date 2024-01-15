@@ -610,9 +610,18 @@ def search_message():
         global db
         message_bub = db['message_bub']
         data = request.json
-        message_name = data['message_name']
-        template = data['template']
-        status = data['status']
+        try:
+            message_name = data['message_name']
+        except:
+            message_name = ''
+        try:
+            template = data['template']
+        except:
+            template = ''
+        try:
+            status = data['status']
+        except:
+            status = ''
         condition = {}
         if message_name:
             condition['message_name'] = { '$regex' : message_name, '$options': "i" }
