@@ -102,6 +102,7 @@ def create_bot():
         bot_user_name = data['bot_user_name']
         create_time = data['create_time']
         owner = data['owner']
+        status = data['status']
         try:
             bot_address = data['bot_address']
         except:
@@ -112,6 +113,7 @@ def create_bot():
                    'token' : token,
                    'create_time' : create_time,
                    'owner' : owner,
+                   'status' : status,
                    'bot_address' : bot_address}
         
         result = bot_hub.insert_one(new_bot)
@@ -152,10 +154,17 @@ def edit_bot():
         global db
         data = request.json
         old_token = data['old_token']
-        bot_name = data['bot_name']
+        try:
+            bot_name = data['bot_name']
+        except:
+            bot_name = ''
         bot_user_name = data['bot_user_name']
         token = data['token']
-        bot_address = data['bot_address']
+        try:
+            bot_address = data['bot_address']
+        except:
+            bot_address = ''
+        status = data['status']
         bot_hub = db['bot_hub']
         condition = {'token': old_token}
         output = bot_hub.find_one(condition)
@@ -163,6 +172,7 @@ def edit_bot():
         output['bot_user_name'] = bot_user_name
         output['token'] = token
         output['bot_address'] = bot_address
+        output['status'] = status
         setting = {"$set": output}
         result = bot_hub.update_many(condition, setting)
         if result:
