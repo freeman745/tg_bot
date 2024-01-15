@@ -95,11 +95,17 @@ def create_bot():
         if search:
             response = {'code': 310, 'error': 'Bot already created!'}
             return jsonify(response)
-        bot_name = data['bot_name']
+        try:
+            bot_name = data['bot_name']
+        except:
+            bot_name = ''
         bot_user_name = data['bot_user_name']
         create_time = data['create_time']
         owner = data['owner']
-        bot_address = data['bot_address']
+        try:
+            bot_address = data['bot_address']
+        except:
+            bot_address = ''
 
         new_bot = {'bot_name' : bot_name,
                    'bot_user_name' : bot_user_name,
