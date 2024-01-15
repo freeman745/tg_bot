@@ -772,7 +772,7 @@ def kill_message():
     try:
         worker.terminate()
         condition = {"message_id": message_id}
-        update_data = {"$set": {"status": "已取消"}}
+        update_data = {"$set": {"status": "已取消", "end_time":int(time.time())}}
         message_hub.update_one(condition, update_data)
         response = {'code': 200, 'error': 'success'}
         return jsonify(response)
