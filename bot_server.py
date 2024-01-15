@@ -622,7 +622,7 @@ def list_template():
 def search_message():
     try:
         global db
-        message_bub = db['message_bub']
+        message_bub = db['message_hub']
         data = request.json
         try:
             message_name = data['message_name']
@@ -659,8 +659,8 @@ def search_message():
                 'delete_time':i['delete_time'],
                 'send_groups':i['send_groups'],
                 'status':i['status'],
-                'button':i['button'],
-                'message_content':i['message_content']
+                #'button':i['button'],
+                #'message_content':i['message_content']
             }
             output.append(t)
         response = {'code': 200, 'error': 'success', 'result':output}
@@ -720,7 +720,7 @@ def preview_message():
 def send_message():
     try:
         global db
-        message_hub = db['message_bub']
+        message_hub = db['message_hub']
         group_hub = db['group_hub']
         data = request.json
         
@@ -777,7 +777,7 @@ def send_message():
             in_db['status'] = '已发送'
         else:
             in_db['status'] = '待发送'
-        message_hub.insert_one(in_db)
+        result = message_hub.insert_one(in_db)
         return jsonify(response)
     except Exception as e:
         response = {'code': 334, 'error': str(e)}

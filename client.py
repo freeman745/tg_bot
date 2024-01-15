@@ -98,7 +98,7 @@ if len(sys.argv) > 1:
                 'button':[{'button_name':'test1', 'url':'www.baidu.com'}, {'button_name':'test2', 'url':'www.google.com'}],
                 'template':'t',
                 'owner':'t',
-                'schedule':10,
+                'schedule':-10,
                 'create_time':0,
                 'delete_time':3,
                 'send_time':0,
@@ -106,8 +106,12 @@ if len(sys.argv) > 1:
         url = 'http://127.0.0.1:4000/send_message'
         response = requests.post(url, json=data, headers=headers)
     if test == 'kill_message':
-        data = {'message_name':'test'}
+        data = {'message_id':''}
         url = 'http://127.0.0.1:4000/kill_message'
+        response = requests.post(url, json=data, headers=headers)
+    if test == 'search_message':
+        data = {}
+        url = 'http://127.0.0.1:4000/search_message'
         response = requests.post(url, json=data, headers=headers)
     if test == 'login':
         data = {'user_name':'admin', 'password':'admin', 'captcha':'eOnA'}
