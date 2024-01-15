@@ -53,7 +53,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
 
                     worker_process.start()
             condition = {"message_id": message_id}
-            update_data = {"$set": {"status": "已发送"}}
+            update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
             message_hub.update_one(condition, update_data)
             time.sleep(schedule)
     else:
@@ -72,7 +72,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
 
                     worker_process.start()
             condition = {"message_id": message_id}
-            update_data = {"$set": {"status": "已发送"}}
+            update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
             message_hub.update_one(condition, update_data)
             break
     
@@ -746,6 +746,7 @@ def send_message():
             'method': method,
             'create_time': create_time,
             'send_time': send_time,
+            'end_time': send_time,
             'delete_time': delete_time,
             'send_groups': send_groups
         }
