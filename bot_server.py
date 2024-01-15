@@ -136,6 +136,10 @@ def delete_bot():
         data = request.json
         token = data['token']
         bot_hub = db['bot_hub']
+        search = bot_hub.find_one({'token': token})
+        if search['status'] != '禁用':
+            response = {'code': 350, 'error': 'can not delete un forbiden bot fail'}
+            return jsonify(response)
         result = bot_hub.delete_many({'token': token})
         if result:
             response = {'code': 200, 'error': 'success'}
@@ -852,12 +856,14 @@ def register():
     user_name = data['user_name']
     password = data['password']
     isAdmin = data['isAdmin']
+    status = data['status']
+    id = ''.join([str(random.randrange(10)) for _ in range(12)])
     global db
     user_hub = db['user_hub']
     if user_hub.find_one({'user_name': user_name}):
         response = {'code': 332, 'error': 'user name exist!'}
         return jsonify(response)
-    user_hub.insert_one({'user_name': user_name, 'password': password, 'isAdmin': isAdmin})
+    user_hub.insert_one({'user_name': user_name, 'password': password, 'isAdmin': isAdmin, 'status': status, 'id':id})
     response = {'code': 200, 'error': 'success'}
 
     return jsonify(response)
@@ -888,13 +894,72 @@ def list_user():
         output = []
         for i in searches:
             t = {
-                'user_name' : i['user_name']
+                'user_name' : i['user_name'],
+                'status' : i['status'],
+                'id' : i['id']
                 }
             output.append(t)
         response = {'code': 200, 'error': 'success', 'user_list': output}
         return jsonify(response)
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
+        return jsonify(response)
+    
+
+@app.route('/edit_user', methods=['POST'])
+def edit_user():
+    try:
+        global db
+        user_hub = db['user_hub']
+        data = request.json
+        id = data['id']
+        user_name = data['user_name']
+        password = data['password']
+        isAdmin = data['isAdmin']
+        status = data['status']
+        if isAdmin == 'True':
+            response = {'code': 344, 'error': 'can not edit super admin'}
+            return jsonify(response)
+
+        condition = {'id': id}
+        output = user_hub.find_one(condition)
+        output['user_name'] = user_name
+        output['password'] = password
+        output['status'] = status
+        setting = {"$set": output}
+        result = user_hub.update_many(condition, setting)
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 345, 'error': 'Update user fail'}
+            return jsonify(response)
+    except Exception as e:
+        response = {'code': 346, 'error': str(e)}
+        return jsonify(response)
+    
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    try:
+        global db
+        data = request.json
+        id = data['id']
+        isAdmin = data['isAdmin']
+        if isAdmin == 'True':
+            response = {'code': 347, 'error': 'can not delete super admin'}
+            return jsonify(response)
+        user_hub = db['user_hub']
+
+        result = user_hub.delete_many({'id': id})
+        if result:
+            response = {'code': 200, 'error': 'success'}
+            return jsonify(response)
+        else:
+            response = {'code': 348, 'error': 'Delete user fail'}
+            return jsonify(response)
+    except Exception as e:
+        response = {'code': 349, 'error': str(e)}
         return jsonify(response)
 
 
