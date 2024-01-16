@@ -480,6 +480,7 @@ def add_template():
             return jsonify(response)
         description = data['description']
         template = data['template']
+        template_html = data['template_html']
         create_time = data['create_time']
         owner = data['owner']
         status = data['status']
@@ -488,6 +489,7 @@ def add_template():
             'template_name':template_name,
             'description':description,
             'template':template,
+            'template_html':template_html,
             'create_time':create_time,
             'owner':owner,
             'status':status,
@@ -524,6 +526,7 @@ def show_template():
             'template_name':output['template_name'],
             'description':output['description'],
             'template':output['template'],
+            'template_html':output['template_html'],
             'status':output['status'],
             'template_id':output['template_id']
         }
@@ -549,10 +552,12 @@ def edit_template():
         new_name = data['template_name']
         description = data['description']
         template = data['template']
+        template_html = data['template_html']
         status = data['status']
         search['template_name'] = new_name
         search['description'] = description
         search['template'] = template
+        search['template_html'] = template_html
         search['status'] = status
         setting = {"$set": search}
         result = template_bub.update_many(condition, setting)
@@ -605,6 +610,7 @@ def list_template():
                 'template_name':i['template_name'],
                 'description':i['description'],
                 'template':i['template'],
+                'template_html':i['template_html'],
                 'create_time':i['create_time'],
                 'owner':i['owner'],
                 'status':i['status'],
