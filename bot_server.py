@@ -629,6 +629,7 @@ def search_message():
     try:
         global db
         message_bub = db['message_hub']
+        template_hub = db['template_bub']
         data = request.json
         try:
             message_name = data['message_name']
@@ -665,9 +666,12 @@ def search_message():
                 'delete_time':i['delete_time'],
                 'send_groups':i['send_groups'],
                 'status':i['status'],
+                'template_name':''
                 #'button':i['button'],
                 #'message_content':i['message_content']
             }
+            if i['template']:
+                t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
             output.append(t)
         response = {'code': 200, 'error': 'success', 'result':output}
         return jsonify(response)
