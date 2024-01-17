@@ -797,9 +797,13 @@ def kill_message():
     global db
     message_hub = db['message_hub']
     message_id = data['message_id']
-    worker = worker_hub[message_id]
     try:
+        worker = worker_hub[message_id]
         worker.terminate()
+    except:
+        pass
+
+    try:
         condition = {"message_id": message_id}
         update_data = {"$set": {"status": "已取消", "end_time":int(time.time())}}
         message_hub.update_one(condition, update_data)
