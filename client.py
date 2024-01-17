@@ -132,6 +132,10 @@ if len(sys.argv) > 1:
     if test == 'list_group':
         url = 'http://127.0.0.1:4000/list_group'
         response = requests.post(url)
+    if test == 'delete_message':
+        data = {'message_id':'admin'}
+        url = 'http://127.0.0.1:4000/delete_message'
+        response = requests.post(url, json=data, headers=headers)
 else:
     print("No variable provided.")
 

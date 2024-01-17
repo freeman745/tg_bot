@@ -53,7 +53,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
 
                     worker_process.start()
             condition = {"message_id": message_id}
-            update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
+            update_data = {"$set": {"status": "待发送", "end_time":int(time.time())}}
             message_hub.update_one(condition, update_data)
             time.sleep(schedule)
     else:
@@ -829,7 +829,7 @@ def delete_message():
         if not search:
             response = {'code': 340, 'error': 'Message does not exist!'}
             return jsonify(response)
-        if search['status'] != '已发送' or search['status'] != '已取消':
+        if search['status'] != '已发送' and search['status'] != '已取消':
             response = {'code': 341, 'error': 'Only sent or canceled message can be deleted!'}
             return jsonify(response)
         result = message_hub.delete_many({'template_id': message_id})
