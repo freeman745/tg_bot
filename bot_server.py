@@ -832,7 +832,7 @@ def delete_message():
         if search['status'] != '已发送' and search['status'] != '已取消':
             response = {'code': 341, 'error': 'Only sent or canceled message can be deleted!'}
             return jsonify(response)
-        result = message_hub.delete_many({'template_id': message_id})
+        result = message_hub.delete_many({'message_id': message_id})
         if result:
             response = {'code': 200, 'error': 'success'}
             return jsonify(response)
