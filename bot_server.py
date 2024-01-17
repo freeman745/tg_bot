@@ -795,7 +795,7 @@ def kill_message():
     data = request.json
     global worker_hub
     global db
-    message_hub = db['message_bub']
+    message_hub = db['message_hub']
     message_id = data['message_id']
     worker = worker_hub[message_id]
     try:
@@ -815,7 +815,7 @@ def delete_message():
     try:
         data = request.json
         global db
-        message_hub = db['message_bub']
+        message_hub = db['message_hub']
         message_id = data['message_id']
         search = message_hub.find_one({'message_id': message_id})
         if not search:
