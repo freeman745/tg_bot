@@ -91,9 +91,6 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
                 chat_id = update.message.chat_id
                 break
         time.sleep(5)
-
-    if not chat_id:
-        return 0
     
     if button:
         keyboard = []
