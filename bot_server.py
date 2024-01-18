@@ -90,8 +90,9 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
             if str(update.message['text']) == preview_code:
                 chat_id = update.message.chat_id
                 break
+        if chat_id:
+            break
         time.sleep(5)
-    
     if button:
         keyboard = []
         for i in button:
@@ -102,7 +103,7 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         sent_message = bot.send_message(chat_id=chat_id, text=message_content)
 
     preview_code_list.remove(preview_code)
-    
+
 
 # health check
 @app.route('/health', methods=['GET'])
@@ -142,9 +143,9 @@ def create_bot():
                    'owner' : owner,
                    'status' : status,
                    'bot_address' : bot_address}
-        
+
         result = bot_hub.insert_one(new_bot)
-        
+
         if result:
             response = {'code': 200, 'error': 'success'}
             return jsonify(response)
@@ -154,7 +155,7 @@ def create_bot():
     except Exception as e:
         response = {'code': 301, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/delete_bot', methods=['POST'])
 def delete_bot():
@@ -177,7 +178,7 @@ def delete_bot():
     except Exception as e:
         response = {'code': 302, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/edit_bot', methods=['POST'])
 def edit_bot():
@@ -249,7 +250,7 @@ def ban():
     except Exception as e:
         response = {'code': 303, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/unban', methods=['POST'])
 def unban():
@@ -282,7 +283,7 @@ def unban():
     except Exception as e:
         response = {'code': 304, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/kick', methods=['POST'])
 def kick():
@@ -370,7 +371,7 @@ def list_bot():
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/group_info', methods=['POST'])
 def group_info():
@@ -403,7 +404,7 @@ def group_info():
             random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
             for i in admin:
                 admin_list.append(i.to_dict())
-            t = {'title':group_title, 
+            t = {'title':group_title,
                  'description':group_description,
                  'type':group_type,
                  'member_count':member_count,
@@ -421,7 +422,7 @@ def group_info():
     except Exception as e:
         response = {'code': 309, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/list_group', methods=['POST'])
 def list_group():
@@ -451,7 +452,7 @@ def list_group():
                 admin = bot.get_chat_administrators(chat_id=chat_id)
                 for j in admin:
                     admin_list.append(j.to_dict())
-                
+
                 t = {
                     'title':group_title,
                     'description':group_description,
@@ -483,7 +484,7 @@ def list_group():
     except Exception as e:
         response = {'code': 307, 'error': str(e), 'group_list': []}
         return jsonify(response)
-    
+
 
 @app.route('/member_info', methods=['POST'])
 def member_info():
@@ -507,7 +508,7 @@ def member_info():
     except Exception as e:
         response = {'code': 328, 'error': str(e), 'result':[]}
         return jsonify(response)
-    
+
 
 @app.route('/add_template', methods=['POST'])
 def add_template():
@@ -538,7 +539,7 @@ def add_template():
             'template_id':template_id
         }
         result = template_bub.insert_one(new_template)
-        
+
         if result:
             response = {'code': 200, 'error': 'success'}
             return jsonify(response)
@@ -549,7 +550,7 @@ def add_template():
     except Exception as e:
         response = {'code': 316, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/show_template', methods=['POST'])
 def show_template():
@@ -577,7 +578,7 @@ def show_template():
     except Exception as e:
         response = {'code': 320, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/edit_template', methods=['POST'])
 def edit_template():
@@ -638,7 +639,7 @@ def delete_template():
     except Exception as e:
         response = {'code': 325, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/list_template', methods=['POST'])
 def list_template():
@@ -664,7 +665,7 @@ def list_template():
     except Exception as e:
         response = {'code': 326, 'error': str(e), 'template_list': []}
         return jsonify(response)
-    
+
 
 @app.route('/search_message', methods=['POST'])
 def search_message():
@@ -732,7 +733,7 @@ def preview_message():
 
         message_content = data['message_content']
         button = data['button']
-        
+
         chat_id = int(data['chat_id'])
         search = group_hub.find_one({'chat_id': chat_id})
         if not search:
@@ -771,22 +772,22 @@ def send_message():
         message_hub = db['message_hub']
         group_hub = db['group_hub']
         data = request.json
-        
+
         message_name = data['message_name']
         template = data['template']
         owner = data['owner']
 
         schedule = data['schedule']
-        
+
         message_content = data['message_content']
         button = data['button']
-        
+
         create_time = data['create_time']
         delete_time = data['delete_time']
         if not delete_time:
             delete_time = -1
         send_time = data['send_time']
-        
+
         send_groups = data['send_groups']
 
         message_id = ''.join([str(random.randrange(10)) for _ in range(12)])
@@ -799,7 +800,7 @@ def send_message():
             chat_bot_match[chat_id] = token
 
         worker_process = multiprocessing.Process(target=send_message_worker,args=(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time,))
-        
+
         worker_process.start()
 
         worker_hub[message_id] = worker_process
@@ -832,7 +833,7 @@ def send_message():
     except Exception as e:
         response = {'code': 334, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/kill_message', methods=['POST'])
 def kill_message():
@@ -856,7 +857,7 @@ def kill_message():
     except Exception as e:
         response = {'code': 335, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/delete_message', methods=['POST'])
 def delete_message():
@@ -882,7 +883,7 @@ def delete_message():
     except Exception as e:
         response = {'code': 343, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -900,9 +901,9 @@ def login():
             response = {'code': 336, 'error': 'captcha error!'}
     else:
         response = {'code': 331, 'error': 'user name or password incorrect!'}
-    
+
     return jsonify(response)
-    
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -958,7 +959,7 @@ def list_user():
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/edit_user', methods=['POST'])
 def edit_user():
@@ -991,7 +992,7 @@ def edit_user():
     except Exception as e:
         response = {'code': 346, 'error': str(e)}
         return jsonify(response)
-    
+
 
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
