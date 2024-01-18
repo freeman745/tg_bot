@@ -467,6 +467,19 @@ def list_group():
                 group_hub.update_many(query, update_data, upsert=True)
                 t['group_index'] = group_hub.find_one(query).get('group_index')
                 output.append(t)
+            if group_hub.count_documents({}) > len(output):
+                output = []
+                searches = group_hub.find()
+                for i in searches:
+                    t = {
+                    'title':i['title'],
+                    'description':i['description'],
+                    'type':i['type'],
+                    'member_count':i['member_count'],
+                    'chat_id':i['chat_id'],
+                    'token':i['token'],
+                    'group_index':i['group_index']
+                    }
         response = {'code': 200, 'error': 'success', 'group_list': output}
         return jsonify(response)
     except Exception as e:
@@ -1008,5 +1021,5 @@ def delete_user():
 
 if __name__ == '__main__':
     ip = '0.0.0.0'
-    port = '4000'
+    port = '5000'
     app.run(host=ip, port=port)
