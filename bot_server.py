@@ -334,7 +334,8 @@ def list_bot():
                 'token' : i['token'],
                 'create_time' : i['create_time'],
                 'owner' : i['owner'],
-                'bot_address' : i['bot_address']
+                'bot_address' : i['bot_address'],
+                'status' : i['status']
             }
             output.append(t)
         response = {'code': 200, 'error': 'success', 'bot_list': output}
