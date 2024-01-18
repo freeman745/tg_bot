@@ -748,7 +748,7 @@ def preview_message():
 
         preview_code_t = ''.join([str(random.randrange(10)) for _ in range(6)])
 
-        while preview_code_t not in preview_code_list:
+        while preview_code_t in preview_code_list:
             preview_code_t = ''.join([str(random.randrange(10)) for _ in range(6)])
 
         preview_code_list.append(preview_code_t)
