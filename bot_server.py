@@ -736,7 +736,7 @@ def preview_message():
         message_content = data['message_content']
         button = data['button']
         
-        chat_id = data['chat_id']
+        chat_id = int(data['chat_id'])
         search = group_hub.find_one({'chat_id': chat_id})
         if not search:
             response = {'code': 350, 'error': 'group not found', 'result': ''}
