@@ -22,6 +22,8 @@ worker_hub = {}
 
 captcha_save = ''
 
+preview_code_list = []
+
 def auto_delete(chat_id, message_id, token, delete_time):
     bot = Bot(token)
     time.sleep(delete_time)
@@ -75,6 +77,34 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
             message_hub.update_one(condition, update_data)
             break
+
+
+def preview_message_worker(bot_token, preview_code, message_content, button):
+    global preview_code_list
+    start = int(time.time())
+    bot = Bot(bot_token)
+    chat_id = ''
+    while (int(time.time()) - start) <= 15*60:
+        updates = bot.get_updates()
+        for update in updates:
+            if str(update.message['text']) == preview_code:
+                chat_id = update.message.chat_id
+                break
+        time.sleep(5)
+
+    if not chat_id:
+        return 0
+    
+    if button:
+        keyboard = []
+        for i in button:
+            keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
+        keyboard = InlineKeyboardMarkup(keyboard)
+        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+    else:
+        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+
+    preview_code_list.remove(preview_code)
     
 
 # health check
@@ -684,46 +714,42 @@ def search_message():
 @app.route('/preview_message', methods=['POST'])
 def preview_message():
     try:
-        global db
+        global db, preview_code_list
         bot_hub = db['bot_hub']
+        group_hub = db['group_hub']
         data = request.json
 
         message_content = data['message_content']
         button = data['button']
         
-        bot_name = data['bot_name']
-        search = bot_hub.find_one({'bot_name': bot_name})
+        chat_id = data['chat_id']
+        search = group_hub.find_one({'chat_id': chat_id})
         if not search:
-            response = {'code': 333, 'error': 'bot name not found', 'user_name': ''}
+            response = {'code': 350, 'error': 'group not found', 'result': ''}
             return jsonify(response)
         token = search['token']
 
-        bot = Bot(token)
-        updates = bot.get_updates()
-        chat_id = ''
-        for update in updates:
-            if update.message['text'] == 'preview':
-                chat_id = update.message.chat_id
-                user_name = update.message['chat']['first_name']
-                break
-        if not chat_id:
-            response = {'code': 330, 'error': 'User did not send message!', 'user_name': ''}
+        search = bot_hub.find_one({'token': token})
+        if not search:
+            response = {'code': 333, 'error': 'bot not found', 'result': ''}
             return jsonify(response)
-        if button:
-            keyboard = []
-            for i in button:
-                keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
-            keyboard = InlineKeyboardMarkup(keyboard)
-            sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
-        else:
-            sent_message = bot.send_message(chat_id=chat_id, text=message_content)
-        worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, 60,))
+        bot_name = search['bot_name']
+
+        preview_code_t = ''.join([str(random.randrange(10)) for _ in range(6)])
+
+        while preview_code_list not in preview_code_list:
+            preview_code_t = ''.join([str(random.randrange(10)) for _ in range(6)])
+
+        preview_code_list.append(preview_code_t)
+
+        worker_process = multiprocessing.Process(target=preview_message_worker, args=(token, preview_code_t, message_content, button,))
 
         worker_process.start()
-        response = {'code': 200, 'error': 'success', 'user_name': user_name}
+        result = {'code': preview_code_t, 'bot_name':bot_name}
+        response = {'code': 200, 'error': 'success', 'result': result}
         return jsonify(response)
     except Exception as e:
-        response = {'code': 329, 'error': str(e), 'user_name': ''}
+        response = {'code': 329, 'error': str(e), 'result': ''}
         return jsonify(response)
 
 
