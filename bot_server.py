@@ -746,6 +746,8 @@ def send_message():
         
         create_time = data['create_time']
         delete_time = data['delete_time']
+        if not delete_time:
+            delete_time = -1
         send_time = data['send_time']
         
         send_groups = data['send_groups']
