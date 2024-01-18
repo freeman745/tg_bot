@@ -480,6 +480,7 @@ def list_group():
                     'token':i['token'],
                     'group_index':i['group_index']
                     }
+                    output.append(t)
         response = {'code': 200, 'error': 'success', 'group_list': output}
         return jsonify(response)
     except Exception as e:
