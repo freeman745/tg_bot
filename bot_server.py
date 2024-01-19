@@ -699,7 +699,11 @@ def search_message():
             condition['template'] = template
         if status:
             condition['status'] = status
-        search = message_bub.find(condition)
+        page_index = int(data['page_index'])
+        per_page = int(data['per_page'])
+        skip = (page_index - 1) * per_page
+        search = message_bub.find(condition).skip(skip).limit(per_page)
+        page_count = math.ceil(message_bub.count_documents(condition) / per_page)
         output = []
         for i in search:
             t = {
@@ -722,7 +726,7 @@ def search_message():
             if i['template']:
                 t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
             output.append(t)
-        response = {'code': 200, 'error': 'success', 'result':output}
+        response = {'code': 200, 'error': 'success', 'result':output, 'page_count':page_count}
         return jsonify(response)
     except Exception as e:
         response = {'code': 327, 'error': str(e), 'result':[]}
