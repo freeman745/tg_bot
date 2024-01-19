@@ -1034,11 +1034,15 @@ def delete_user():
         global db
         data = request.json
         id = data['id']
-        isAdmin = data['isAdmin']
-        if isAdmin == 'True':
+        user_hub = db['user_hub']
+        search = user_hub.find_one({'id':id})
+        if search['isAdmin'] == 'True':
             response = {'code': 347, 'error': 'can not delete super admin'}
             return jsonify(response)
-        user_hub = db['user_hub']
+        
+        if search['status'] != '禁用':
+            response = {'code': 351, 'error': 'only unused account can be deleted'}
+            return jsonify(response)
 
         result = user_hub.delete_many({'id': id})
         if result:
