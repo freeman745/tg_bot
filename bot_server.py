@@ -709,9 +709,9 @@ def search_message():
                 'delete_time':i['delete_time'],
                 'send_groups':i['send_groups'],
                 'status':i['status'],
-                'template_name':''
-                #'button':i['button'],
-                #'message_content':i['message_content']
+                'template_name':'',
+                'button':i['button'],
+                'message_content':i['message_content']
             }
             if i['template']:
                 t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
@@ -822,7 +822,8 @@ def send_message():
             'send_time': send_time,
             'end_time': send_time,
             'delete_time': delete_time,
-            'send_groups': send_groups
+            'send_groups': send_groups,
+            'button': button
         }
         if send_time <= time.time():
             in_db['status'] = '已发送'
