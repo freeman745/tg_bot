@@ -37,7 +37,10 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
     if button:
         keyboard = []
         for i in button:
-            keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
+            line = []
+            for j in i:
+                line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
+            keyboard.append(line)
         keyboard = InlineKeyboardMarkup(keyboard)
 
     if schedule > 0:
@@ -97,7 +100,10 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
     if button:
         keyboard = []
         for i in button:
-            keyboard.append([InlineKeyboardButton(i['button_name'], url=i['url'])])
+            line = []
+            for j in i:
+                line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
+            keyboard.append(line)
         keyboard = InlineKeyboardMarkup(keyboard)
         sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
     else:
