@@ -823,7 +823,8 @@ def send_message():
             'end_time': send_time,
             'delete_time': delete_time,
             'send_groups': send_groups,
-            'button': button
+            'button': button,
+            'message_content': message_content
         }
         if send_time <= time.time():
             in_db['status'] = '已发送'
