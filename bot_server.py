@@ -377,8 +377,9 @@ def list_bot():
                 'status' : i['status']
             }
             output.append(t)
-        page_count = math.ceil(bot_hub.count_documents({}) / per_page)
-        response = {'code': 200, 'error': 'success', 'bot_list': output, 'page_count': page_count}
+        total = bot_hub.count_documents({})
+        page_count = math.ceil(total / per_page)
+        response = {'code': 200, 'error': 'success', 'bot_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
@@ -442,9 +443,7 @@ def list_group():
         global db
         bot_hub = db['bot_hub']
         searches = bot_hub.find()
-        output = []
         group_hub = db['group_hub']
-        output = []
         for i in searches:
             token = i['token']
             bot = Bot(token)
@@ -475,13 +474,17 @@ def list_group():
                 }
                 update_data = {"$set": t}
                 group_hub.update_many(query, update_data, upsert=True)
-                t['group_index'] = group_hub.find_one(query).get('group_index')
-                output.append(t)
-            if group_hub.count_documents({}) > len(output):
-                output = []
-                searches = group_hub.find()
-                for i in searches:
-                    t = {
+            
+            output = []
+            data = request.json
+            page_index = int(data['page_index'])
+            per_page = int(data['per_page'])
+            skip = (page_index - 1) * per_page
+            total = group_hub.count_documents({})
+            page_count = math.ceil(total / per_page)
+            searches = group_hub.find().skip(skip).limit(per_page)
+            for i in searches:
+                t = {
                     'title':i['title'],
                     'description':i['description'],
                     'type':i['type'],
@@ -490,8 +493,8 @@ def list_group():
                     'token':i['token'],
                     'group_index':i['group_index']
                     }
-                    output.append(t)
-        response = {'code': 200, 'error': 'success', 'group_list': output}
+                output.append(t)
+        response = {'code': 200, 'error': 'success', 'group_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
         response = {'code': 307, 'error': str(e), 'group_list': []}
@@ -656,9 +659,13 @@ def delete_template():
 @app.route('/list_template', methods=['POST'])
 def list_template():
     try:
+        data = request.json
+        page_index = int(data['page_index'])
+        per_page = int(data['per_page'])
+        skip = (page_index - 1) * per_page
         global db
         template_bub = db['template_bub']
-        searches = template_bub.find()
+        searches = template_bub.find().skip(skip).limit(per_page)
         output = []
         for i in searches:
             t = {
@@ -672,7 +679,9 @@ def list_template():
                 'template_id':i['template_id']
             }
             output.append(t)
-        response = {'code': 200, 'error': 'success', 'template_list': output}
+        total = template_bub.count_documents({})
+        page_count = math.ceil(template_bub.count_documents({}) / per_page)
+        response = {'code': 200, 'error': 'success', 'template_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
         response = {'code': 326, 'error': str(e), 'template_list': []}
@@ -709,7 +718,8 @@ def search_message():
         per_page = int(data['per_page'])
         skip = (page_index - 1) * per_page
         search = message_bub.find(condition).skip(skip).limit(per_page)
-        page_count = math.ceil(message_bub.count_documents(condition) / per_page)
+        total = message_bub.count_documents(condition)
+        page_count = math.ceil(total / per_page)
         output = []
         for i in search:
             t = {
@@ -732,7 +742,7 @@ def search_message():
             if i['template']:
                 t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
             output.append(t)
-        response = {'code': 200, 'error': 'success', 'result':output, 'page_count':page_count}
+        response = {'code': 200, 'error': 'success', 'result':output, 'page_count':page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
         response = {'code': 327, 'error': str(e), 'result':[]}
@@ -958,12 +968,18 @@ def captcha():
     }
 
 
-@app.route('/list_user')
+@app.route('/list_user', methods=['POST'])
 def list_user():
     try:
+        data = request.json
+        page_index = int(data['page_index'])
+        per_page = int(data['per_page'])
+        skip = (page_index - 1) * per_page
         global db
         user_hub = db['user_hub']
-        searches = user_hub.find()
+        searches = user_hub.find().skip(skip).limit(per_page)
+        total = user_hub.count_documents({})
+        page_count = math.ceil(total / per_page)
         output = []
         for i in searches:
             t = {
@@ -972,7 +988,7 @@ def list_user():
                 'id' : i['id']
                 }
             output.append(t)
-        response = {'code': 200, 'error': 'success', 'user_list': output}
+        response = {'code': 200, 'error': 'success', 'user_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
