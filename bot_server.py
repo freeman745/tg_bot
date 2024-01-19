@@ -8,6 +8,7 @@ import multiprocessing
 import io
 from captcha.image import ImageCaptcha
 import string
+import math
 
 
 app = Flask(__name__)
@@ -351,9 +352,13 @@ def set_group_name_description():
 @app.route('/list_bot', methods=['POST'])
 def list_bot():
     try:
+        data = request.json
+        page_index = int(data['page_index'])
+        per_page = int(data['per_page'])
         global db
         bot_hub = db['bot_hub']
-        searches = bot_hub.find()
+        skip = (page_index - 1) * per_page
+        searches = bot_hub.find().skip(skip).limit(per_page)
         output = []
         for i in searches:
             t = {
@@ -366,7 +371,8 @@ def list_bot():
                 'status' : i['status']
             }
             output.append(t)
-        response = {'code': 200, 'error': 'success', 'bot_list': output}
+        page_count = math.ceil(bot_hub.count_documents({}) / per_page)
+        response = {'code': 200, 'error': 'success', 'bot_list': output, 'page_count': page_count}
         return jsonify(response)
     except Exception as e:
         response = {'code': 308, 'error': str(e)}
