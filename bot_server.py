@@ -766,8 +766,11 @@ def search_message():
                 'button':i['button'],
                 'message_content':i['message_content']
             }
-            if i['template']:
-                t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
+            try:
+                if i['template']:
+                    t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
+            except:
+                pass
             output.append(t)
         response = {'code': 200, 'error': 'success', 'result':output, 'page_count':page_count, 'total_count': total}
         return jsonify(response)
