@@ -364,7 +364,7 @@ def list_bot():
         global db
         bot_hub = db['bot_hub']
         skip = (page_index - 1) * per_page
-        searches = bot_hub.find().skip(skip).limit(per_page)
+        searches = bot_hub.find().sort('$natural',-1).skip(skip).limit(per_page)
         output = []
         for i in searches:
             t = {
@@ -483,7 +483,7 @@ def list_group():
                 skip = (page_index - 1) * per_page
                 total = group_hub.count_documents({})
                 page_count = math.ceil(total / per_page)
-                searches = group_hub.find().skip(skip).limit(per_page)
+                searches = group_hub.find().sort('$natural',-1).skip(skip).limit(per_page)
                 for i in searches:
                     t = {
                         'title':i['title'],
@@ -682,7 +682,7 @@ def list_template():
         skip = (page_index - 1) * per_page
         global db
         template_bub = db['template_bub']
-        searches = template_bub.find().skip(skip).limit(per_page)
+        searches = template_bub.find().sort('$natural',-1).skip(skip).limit(per_page)
         output = []
         for i in searches:
             t = {
@@ -734,7 +734,7 @@ def search_message():
         page_index = int(data['page_index'])
         per_page = int(data['per_page'])
         skip = (page_index - 1) * per_page
-        search = message_bub.find(condition).skip(skip).limit(per_page)
+        search = message_bub.find(condition).sort('$natural',-1).skip(skip).limit(per_page)
         total = message_bub.count_documents(condition)
         page_count = math.ceil(total / per_page)
         output = []
@@ -994,7 +994,7 @@ def list_user():
         skip = (page_index - 1) * per_page
         global db
         user_hub = db['user_hub']
-        searches = user_hub.find().skip(skip).limit(per_page)
+        searches = user_hub.find().sort('$natural',-1).skip(skip).limit(per_page)
         total = user_hub.count_documents({})
         page_count = math.ceil(total / per_page)
         output = []
