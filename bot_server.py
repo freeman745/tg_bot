@@ -477,23 +477,40 @@ def list_group():
             
             output = []
             data = request.json
-            page_index = int(data['page_index'])
-            per_page = int(data['per_page'])
-            skip = (page_index - 1) * per_page
-            total = group_hub.count_documents({})
-            page_count = math.ceil(total / per_page)
-            searches = group_hub.find().skip(skip).limit(per_page)
-            for i in searches:
-                t = {
-                    'title':i['title'],
-                    'description':i['description'],
-                    'type':i['type'],
-                    'member_count':i['member_count'],
-                    'chat_id':i['chat_id'],
-                    'token':i['token'],
-                    'group_index':i['group_index']
-                    }
-                output.append(t)
+            try:
+                page_index = int(data['page_index'])
+                per_page = int(data['per_page'])
+                skip = (page_index - 1) * per_page
+                total = group_hub.count_documents({})
+                page_count = math.ceil(total / per_page)
+                searches = group_hub.find().skip(skip).limit(per_page)
+                for i in searches:
+                    t = {
+                        'title':i['title'],
+                        'description':i['description'],
+                        'type':i['type'],
+                        'member_count':i['member_count'],
+                        'chat_id':i['chat_id'],
+                        'token':i['token'],
+                        'group_index':i['group_index']
+                        }
+                    output.append(t)
+            except:
+                output = []
+                searches = group_hub.find()
+                for i in searches:
+                    t = {
+                        'title':i['title'],
+                        'description':i['description'],
+                        'type':i['type'],
+                        'member_count':i['member_count'],
+                        'chat_id':i['chat_id'],
+                        'token':i['token'],
+                        'group_index':i['group_index']
+                        }
+                    output.append(t)
+                response = {'code': 200, 'error': 'success', 'group_list': output}
+                return jsonify(response)
         response = {'code': 200, 'error': 'success', 'group_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
@@ -1004,14 +1021,16 @@ def edit_user():
         id = data['id']
         user_name = data['user_name']
         password = data['password']
-        isAdmin = data['isAdmin']
         status = data['status']
+        condition = {'id': id}
+        output = user_hub.find_one(condition)
+        isAdmin = output['isAdmin']
+        if not isAdmin:
+            response = {'code': 352, 'error': 'user id not exist'}
         if isAdmin == 'True':
             response = {'code': 344, 'error': 'can not edit super admin'}
             return jsonify(response)
 
-        condition = {'id': id}
-        output = user_hub.find_one(condition)
         output['user_name'] = user_name
         output['password'] = password
         output['status'] = status
