@@ -50,10 +50,15 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             for chat_id in chat_bot_match:
                 token = chat_bot_match[chat_id]
                 bot = Bot(token)
-                if button:
-                    sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
-                else:
-                    sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                try:
+                    if button:
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                    else:
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                except:
+                    condition = {"message_id": message_id}
+                    update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
+                    continue
                 if delete_time > 0:
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
@@ -69,10 +74,15 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             for chat_id in chat_bot_match:
                 token = chat_bot_match[chat_id]
                 bot = Bot(token)
-                if button:
-                    sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
-                else:
-                    sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                try:
+                    if button:
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                    else:
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                except:
+                    condition = {"message_id": message_id}
+                    update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
+                    continue
                 if delete_time > 0:
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
