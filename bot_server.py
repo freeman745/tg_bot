@@ -25,6 +25,9 @@ captcha_save = ''
 
 preview_code_list = []
 
+if not db['user_hub'].find_one({'user_name':'admin'}):
+    db['user_hub'].insert_one({'user_name':'admin','password':'admin123','status':'启用','isAdmin':'True'})
+
 def auto_delete(chat_id, message_id, token, delete_time):
     bot = Bot(token)
     time.sleep(delete_time)
