@@ -768,7 +768,7 @@ def search_message():
             }
             try:
                 if i['template']:
-                    t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template']
+                    t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template_name']
             except:
                 pass
             output.append(t)
