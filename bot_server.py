@@ -1013,13 +1013,17 @@ def list_user():
         data = request.json
         condition = {}
         try:
-            condition['user_name'] = data['user_name']
+            user_name = data['user_name']
         except:
-            pass
+            user_name = ''
         try:
-            condition['status'] = data['status']
+            status = data['status']
         except:
-            pass
+            status = ''
+        if user_name:
+            condition['user_name'] = user_name
+        if status:
+            condition['status'] = status
         page_index = int(data['page_index'])
         per_page = int(data['per_page'])
         skip = (page_index - 1) * per_page
