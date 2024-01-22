@@ -9,13 +9,19 @@ import io
 from captcha.image import ImageCaptcha
 import string
 import math
+import sys
 
 
 app = Flask(__name__)
 
 app.config['JSON_AS_ASCII'] = False
 
-db_client = pymongo.MongoClient(host='localhost', port=27017)
+ip = sys.argv[1]
+port = sys.argv[2]
+
+mongo_url = 'mongodb://'+str(ip)+':'+str(port)+'/'
+
+db_client = pymongo.MongoClient(mongo_url)
 
 db = db_client['telegram']
 
@@ -1005,12 +1011,21 @@ def captcha():
 def list_user():
     try:
         data = request.json
+        condition = {}
+        try:
+            condition['user_name'] = data['user_name']
+        except:
+            pass
+        try:
+            condition['status'] = data['status']
+        except:
+            pass
         page_index = int(data['page_index'])
         per_page = int(data['per_page'])
         skip = (page_index - 1) * per_page
         global db
         user_hub = db['user_hub']
-        searches = user_hub.find().sort('$natural',-1).skip(skip).limit(per_page)
+        searches = user_hub.find(condition).sort('$natural',-1).skip(skip).limit(per_page)
         total = user_hub.count_documents({})
         page_count = math.ceil(total / per_page)
         output = []
