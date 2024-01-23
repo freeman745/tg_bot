@@ -516,8 +516,14 @@ def list_group():
                     'chat_id':chat_id,
                     'token':token
                 }
-                update_data = {"$set": t}
-                group_hub.update_many(query, update_data, upsert=True)
+                group_ex = group_hub.find_one({'chat_id':t['chat_id']})
+                if group_ex:
+                    update_data = {"$set": t}
+                    group_hub.update_many(query, update_data, upsert=True)
+                else:
+                    random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
+                    t['group_index'] = random_number
+                    group_hub.insert_one(t)
             
             output = []
             data = request.json
