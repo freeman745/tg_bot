@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from telegram import Bot, ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 import time
 import json
 import pymongo
@@ -69,9 +69,9 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                 bot = Bot(token)
                 try:
                     if button:
-                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
                     else:
-                        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
                 except:
                     flag = 1
                     condition = {"message_id": message_id}
@@ -95,9 +95,9 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                 bot = Bot(token)
                 try:
                     if button:
-                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
                     else:
-                        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+                        sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
                 except:
                     flag = 1
                     condition = {"message_id": message_id}
@@ -144,14 +144,14 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         if keyboard:
             keyboard = InlineKeyboardMarkup(keyboard)
         try:
-            sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard)
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard, parse_mode=ParseMode.HTML)
     else:
         try:
-            sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard)
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
     preview_code_list.remove(preview_code)
 
