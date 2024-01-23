@@ -57,7 +57,8 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     pass
             if line:
                 keyboard.append(line)
-        keyboard = InlineKeyboardMarkup(keyboard)
+        if keyboard:
+            keyboard = InlineKeyboardMarkup(keyboard)
 
     if schedule > 0:
         while True:
@@ -131,13 +132,26 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         keyboard = []
         for i in button:
             line = []
+            if not i:
+                continue
             for j in i:
-                line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
-            keyboard.append(line)
-        keyboard = InlineKeyboardMarkup(keyboard)
-        sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+                try:
+                    line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
+                except:
+                    pass
+            if line:
+                keyboard.append(line)
+        if keyboard:
+            keyboard = InlineKeyboardMarkup(keyboard)
+        try:
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard)
+        except Exception as e:
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard)
     else:
-        sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+        try:
+            sent_message = bot.send_message(chat_id=chat_id, text=message_content)
+        except Exception as e:
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard)
 
     preview_code_list.remove(preview_code)
 
