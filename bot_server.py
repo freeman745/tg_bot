@@ -43,6 +43,7 @@ def auto_delete(chat_id, message_id, token, delete_time):
 def send_message_worker(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time):
     global db
     message_hub = db['message_hub']
+    flag = 0
     if button:
         keyboard = []
         for i in button:
@@ -71,6 +72,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     else:
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content)
                 except:
+                    flag = 1
                     condition = {"message_id": message_id}
                     update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
                     continue
@@ -78,10 +80,11 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
                     worker_process.start()
-            condition = {"message_id": message_id}
-            update_data = {"$set": {"status": "待发送", "end_time":int(time.time())}}
-            message_hub.update_one(condition, update_data)
-            time.sleep(schedule)
+            if flag == 0:
+                condition = {"message_id": message_id}
+                update_data = {"$set": {"status": "待发送", "end_time":int(time.time())}}
+                message_hub.update_one(condition, update_data)
+                time.sleep(schedule)
     else:
         while True:
             if time.time() < send_time:
@@ -95,6 +98,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     else:
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content)
                 except:
+                    flag = 1
                     condition = {"message_id": message_id}
                     update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
                     continue
@@ -102,9 +106,10 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
 
                     worker_process.start()
-            condition = {"message_id": message_id}
-            update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
-            message_hub.update_one(condition, update_data)
+            if flag == 0:
+                condition = {"message_id": message_id}
+                update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
+                message_hub.update_one(condition, update_data)
             break
 
 
