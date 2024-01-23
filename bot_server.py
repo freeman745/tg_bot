@@ -47,9 +47,15 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
         keyboard = []
         for i in button:
             line = []
+            if not i:
+                continue
             for j in i:
-                line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
-            keyboard.append(line)
+                try:
+                    line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
+                except:
+                    pass
+            if line:
+                keyboard.append(line)
         keyboard = InlineKeyboardMarkup(keyboard)
 
     if schedule > 0:
