@@ -538,6 +538,12 @@ def list_group():
                         'token':i['token'],
                         'group_index':i['group_index']
                         }
+                    try:
+                        t['group_index'] = i['group_index']
+                    except:
+                        random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
+                        t['group_index'] = random_number
+                        group_hub.update_one({'_id': i['_id']}, {'$set': {'group_index':t['group_index']}})
                     output.append(t)
             except:
                 output = []
