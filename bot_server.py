@@ -921,10 +921,7 @@ def send_message():
             'button': button,
             'message_content': message_content
         }
-        if send_time <= time.time():
-            in_db['status'] = '已发送'
-        else:
-            in_db['status'] = '待发送'
+        in_db['status'] = '待发送'
         result = message_hub.insert_one(in_db)
         return jsonify(response)
     except Exception as e:
