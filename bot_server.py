@@ -807,6 +807,11 @@ def search_message():
                 'message_content':i['message_content']
             }
             try:
+                if i['message_html']:
+                    t['message_html'] = i['message_html']
+            except:
+                pass
+            try:
                 if i['template']:
                     t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template_name']
             except:
@@ -881,6 +886,7 @@ def send_message():
         schedule = data['schedule']
 
         message_content = data['message_content']
+        message_html = data['message_html']
         button = data['button']
 
         create_time = data['create_time']
@@ -925,7 +931,8 @@ def send_message():
             'delete_time': delete_time,
             'send_groups': send_groups,
             'button': button,
-            'message_content': message_content
+            'message_content': message_content,
+            'message_html': message_html
         }
         #in_db['status'] = '待发送'
         result = message_hub.insert_one(in_db)
