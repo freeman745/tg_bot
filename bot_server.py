@@ -807,7 +807,7 @@ def search_message():
                 pass
             try:
                 if i['status']:
-                    t['status'] = i[status]
+                    t['status'] = i['status']
             except:
                 pass
             output.append(t)
