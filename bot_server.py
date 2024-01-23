@@ -84,8 +84,8 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             if flag == 0:
                 condition = {"message_id": message_id}
                 update_data = {"$set": {"status": "待发送", "end_time":int(time.time())}}
-                message_hub.update_one(condition, update_data)
-                time.sleep(schedule)
+            message_hub.update_one(condition, update_data)
+            time.sleep(schedule)
     else:
         while True:
             if time.time() < send_time:
@@ -110,7 +110,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             if flag == 0:
                 condition = {"message_id": message_id}
                 update_data = {"$set": {"status": "已发送", "end_time":int(time.time())}}
-                message_hub.update_one(condition, update_data)
+            message_hub.update_one(condition, update_data)
             break
 
 
@@ -921,7 +921,7 @@ def send_message():
             'button': button,
             'message_content': message_content
         }
-        in_db['status'] = '待发送'
+        #in_db['status'] = '待发送'
         result = message_hub.insert_one(in_db)
         return jsonify(response)
     except Exception as e:
