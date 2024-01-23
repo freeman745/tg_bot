@@ -795,7 +795,7 @@ def search_message():
                 'end_time':i['end_time'],
                 'delete_time':i['delete_time'],
                 'send_groups':i['send_groups'],
-                'status':i['status'],
+                'status':'',
                 'template_name':'',
                 'button':i['button'],
                 'message_content':i['message_content']
@@ -803,6 +803,11 @@ def search_message():
             try:
                 if i['template']:
                     t['template_name'] = template_hub.find_one({'template_id':str(i['template'])})['template_name']
+            except:
+                pass
+            try:
+                if i['status']:
+                    t['status'] = i[status]
             except:
                 pass
             output.append(t)
