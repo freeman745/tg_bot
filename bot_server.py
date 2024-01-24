@@ -80,7 +80,10 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     print(str(e))
                     flag = 1
                     condition = {"message_id": message_id}
-                    update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
+                    if 'wrong http url' in str(e):
+                        update_data = {"$set": {"status": "发送失败", "end_time":int(time.time()), "err_msg":"附加按钮地址不符合规则，请按规则填写。"}}
+                    else:
+                        update_data = {"$set": {"status": "发送失败", "end_time":int(time.time()), "err_msg":str(e)}}
                     continue
                 if delete_time > 0:
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
@@ -108,7 +111,10 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                     print(str(e))
                     flag = 1
                     condition = {"message_id": message_id}
-                    update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
+                    if 'wrong http url' in str(e):
+                        update_data = {"$set": {"status": "发送失败", "end_time":int(time.time()), "err_msg":"附加按钮地址不符合规则，请按规则填写。"}}
+                    else:
+                        update_data = {"$set": {"status": "发送失败", "end_time":int(time.time()), "err_msg":str(e)}}
                     continue
                 if delete_time > 0:
                     worker_process = multiprocessing.Process(target=auto_delete,args=(chat_id, sent_message.message_id, token, delete_time))
@@ -159,12 +165,18 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         try:
             sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
+            if 'wrong http url' in str(e):
+                sent_message = bot.send_message(chat_id=chat_id, text="附加按钮地址不符合规则，请按规则填写。", parse_mode=ParseMode.HTML)
+            else:
+                sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
     else:
         try:
             sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
+            if 'wrong http url' in str(e):
+                sent_message = bot.send_message(chat_id=chat_id, text="附加按钮地址不符合规则，请按规则填写。", parse_mode=ParseMode.HTML)
+            else:
+                sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
 
     preview_code_list.remove(preview_code)
 
@@ -845,6 +857,11 @@ def search_message():
             try:
                 if i['status']:
                     t['status'] = i['status']
+            except:
+                pass
+            try:
+                if i['err_msg']:
+                    t['err_msg'] = i['err_msg']
             except:
                 pass
             output.append(t)
