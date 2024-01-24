@@ -1014,6 +1014,9 @@ def login():
     user_hub = db['user_hub']
     search = user_hub.find_one({'user_name': user_name, 'password': password})
     if search:
+        if search['status'] != '启用':
+            response = {'code': 353, 'error': 'ban account can not log in!'}
+            return jsonify(response)
         if cap.upper() == captcha_save.upper():
             response = {'code': 200, 'error': 'success', 'isAdmin': search['isAdmin']}
         else:
