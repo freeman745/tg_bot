@@ -129,15 +129,17 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         try:
             updates = bot.get_updates()
             for update in updates:
-                if str(update.message['text']) == preview_code:
-                    chat_id = update.message.chat_id
-                    break
+                try:
+                    if str(update.message['text']) == preview_code:
+                        chat_id = update.message.chat_id
+                        break
+                except:
+                    pass
             if chat_id:
                 break
             time.sleep(5)
         except:
             continue
-    print('444')
     if button:
         keyboard = []
         for i in button:
@@ -156,7 +158,7 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         try:
             sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard, parse_mode=ParseMode.HTML)
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
     else:
         try:
             sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
