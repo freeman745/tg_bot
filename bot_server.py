@@ -53,7 +53,9 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             for j in i:
                 try:
                     line.append(InlineKeyboardButton(j['button_name'], url=j['url']))
-                except:
+                except Exception as e:
+                    print('111')
+                    print(str(e))
                     pass
             if line:
                 keyboard.append(line)
@@ -72,7 +74,9 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
                     else:
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
-                except:
+                except Exception as e:
+                    print('222')
+                    print(str(e))
                     flag = 1
                     condition = {"message_id": message_id}
                     update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
@@ -98,7 +102,9 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content, reply_markup=keyboard, parse_mode=ParseMode.HTML)
                     else:
                         sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
-                except:
+                except Exception as e:
+                    print('333')
+                    print(str(e))
                     flag = 1
                     condition = {"message_id": message_id}
                     update_data = {"$set": {"status": "发送失败", "end_time":int(time.time())}}
