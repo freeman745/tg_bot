@@ -126,14 +126,17 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
     bot = Bot(bot_token)
     chat_id = ''
     while (int(time.time()) - start) <= 15*60:
-        updates = bot.get_updates()
-        for update in updates:
-            if str(update.message['text']) == preview_code:
-                chat_id = update.message.chat_id
+        try:
+            updates = bot.get_updates()
+            for update in updates:
+                if str(update.message['text']) == preview_code:
+                    chat_id = update.message.chat_id
+                    break
+            if chat_id:
                 break
-        if chat_id:
-            break
-        time.sleep(5)
+            time.sleep(5)
+        except:
+            continue
     print('444')
     if button:
         keyboard = []
