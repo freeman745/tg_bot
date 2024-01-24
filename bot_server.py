@@ -10,6 +10,7 @@ from captcha.image import ImageCaptcha
 import string
 import math
 import sys
+import traceback
 
 
 app = Flask(__name__)
@@ -502,40 +503,46 @@ def list_group():
         group_hub = db['group_hub']
         for i in searches:
             token = i['token']
-            bot = Bot(token)
-            updates = bot.get_updates()
-            group_chat_ids = list(set([update.message.chat_id for update in updates if update.message and update.message.chat.type == 'supergroup']))
+            try:
+                bot = Bot(token)
+                updates = bot.get_updates()
+                group_chat_ids = list(set([update.message.chat_id for update in updates if update.message and update.message.chat.type == 'supergroup']))
+            except:
+                continue
             for chat_id in group_chat_ids:
-                # Get information about the chat (group)
-                query = {"chat_id": chat_id}
-                chat_info = bot.get_chat(chat_id)
+                try:
+                    # Get information about the chat (group)
+                    query = {"chat_id": chat_id}
+                    chat_info = bot.get_chat(chat_id)
 
-                # Access title and description from the chat_info object
-                group_title = str(chat_info.title)
-                group_description = str(chat_info.description)
-                group_type = str(chat_info.type)
-                member_count = str(bot.get_chat_member_count(chat_id))
-                admin_list = []
-                admin = bot.get_chat_administrators(chat_id=chat_id)
-                for j in admin:
-                    admin_list.append(j.to_dict())
+                    # Access title and description from the chat_info object
+                    group_title = str(chat_info.title)
+                    group_description = str(chat_info.description)
+                    group_type = str(chat_info.type)
+                    member_count = str(bot.get_chat_member_count(chat_id))
+                    admin_list = []
+                    admin = bot.get_chat_administrators(chat_id=chat_id)
+                    for j in admin:
+                        admin_list.append(j.to_dict())
 
-                t = {
-                    'title':group_title,
-                    'description':group_description,
-                    'type':group_type,
-                    'member_count':member_count,
-                    'chat_id':chat_id,
-                    'token':token
-                }
-                group_ex = group_hub.find_one({'chat_id':t['chat_id']})
-                if group_ex:
-                    update_data = {"$set": t}
-                    group_hub.update_many(query, update_data, upsert=True)
-                else:
-                    random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
-                    t['group_index'] = random_number
-                    group_hub.insert_one(t)
+                    t = {
+                        'title':group_title,
+                        'description':group_description,
+                        'type':group_type,
+                        'member_count':member_count,
+                        'chat_id':chat_id,
+                        'token':token
+                    }
+                    group_ex = group_hub.find_one({'chat_id':t['chat_id']})
+                    if group_ex:
+                        update_data = {"$set": t}
+                        group_hub.update_many(query, update_data, upsert=True)
+                    else:
+                        random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
+                        t['group_index'] = random_number
+                        group_hub.insert_one(t)
+                except:
+                    continue
             
             output = []
             data = request.json
@@ -582,6 +589,7 @@ def list_group():
         response = {'code': 200, 'error': 'success', 'group_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
+        traceback.print_exc()
         response = {'code': 307, 'error': str(e), 'group_list': []}
         return jsonify(response)
 
