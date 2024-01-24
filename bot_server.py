@@ -134,6 +134,7 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         if chat_id:
             break
         time.sleep(5)
+    print('444')
     if button:
         keyboard = []
         for i in button:
@@ -157,7 +158,7 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
         try:
             sent_message = bot.send_message(chat_id=chat_id, text=message_content, parse_mode=ParseMode.HTML)
         except Exception as e:
-            sent_message = bot.send_message(chat_id=chat_id, text=str(e), reply_markup=keyboard, parse_mode=ParseMode.HTML)
+            sent_message = bot.send_message(chat_id=chat_id, text=str(e), parse_mode=ParseMode.HTML)
 
     preview_code_list.remove(preview_code)
 
