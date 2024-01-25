@@ -41,7 +41,7 @@ def auto_delete(chat_id, message_id, token, delete_time):
     bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 
-def send_message_worker(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time):
+def send_message_worker(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time, end_time):
     global db
     message_hub = db['message_hub']
     flag = 0
@@ -64,7 +64,7 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
             keyboard = InlineKeyboardMarkup(keyboard)
 
     if schedule > 0:
-        while True:
+        while time.time() < end_time:
             if time.time() < send_time:
                 continue
             for chat_id in chat_bot_match:
@@ -938,6 +938,7 @@ def send_message():
 
         create_time = data['create_time']
         delete_time = data['delete_time']
+        end_time = data['end_time']
         if not delete_time:
             delete_time = -1
         send_time = data['send_time']
@@ -953,7 +954,7 @@ def send_message():
             token = group_hub.find_one({'title': group})['token']
             chat_bot_match[chat_id] = token
 
-        worker_process = multiprocessing.Process(target=send_message_worker,args=(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time,))
+        worker_process = multiprocessing.Process(target=send_message_worker,args=(message_id, chat_bot_match, message_content, button, send_time, schedule, delete_time,end_time,))
 
         worker_process.start()
 
