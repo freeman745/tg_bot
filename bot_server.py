@@ -240,11 +240,9 @@ def delete_bot():
         data = request.json
         token = data['token']
         bot_hub = db['bot_hub']
-        group_hub = db['group_hub']
         search = bot_hub.find_one({'token': token})
-        check_group = group_hub.find_one({'token': token})
-        if search['status'] != '禁用' or check_group:
-            response = {'code': 350, 'error': 'can not delete unforbiden bot or bot with groups'}
+        if search['status'] != '禁用':
+            response = {'code': 350, 'error': 'can not delete un forbiden bot fail'}
             return jsonify(response)
         result = bot_hub.delete_many({'token': token})
         if result:
