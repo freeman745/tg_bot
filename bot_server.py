@@ -93,6 +93,8 @@ def send_message_worker(message_id, chat_bot_match, message_content, button, sen
                 condition = {"message_id": message_id}
                 update_data = {"$set": {"status": "待发送", "end_time":int(time.time())}}
             message_hub.update_one(condition, update_data)
+            if abs(end_time - time.time()) < schedule:
+                break 
             time.sleep(schedule)
         if flag == 0:
             condition = {"message_id": message_id}
