@@ -511,7 +511,9 @@ def list_group():
     try:
         global db
         bot_hub = db['bot_hub']
-        searches = bot_hub.find()
+        bot_con = {'status':'启用'}
+        searches = bot_hub.find(bot_con)
+        bot_list = []
         group_hub = db['group_hub']
         for i in searches:
             token = i['token']
@@ -521,6 +523,7 @@ def list_group():
                 group_chat_ids = list(set([update.message.chat_id for update in updates if update.message and update.message.chat.type == 'supergroup']))
             except:
                 continue
+            bot_list.append(token)
             for chat_id in group_chat_ids:
                 try:
                     # Get information about the chat (group)
@@ -558,13 +561,14 @@ def list_group():
             
             output = []
             data = request.json
+            bot_con = {'token':{'$in':bot_list}}
             try:
                 page_index = int(data['page_index'])
                 per_page = int(data['per_page'])
                 skip = (page_index - 1) * per_page
                 total = group_hub.count_documents({})
                 page_count = math.ceil(total / per_page)
-                searches = group_hub.find().sort('$natural',-1).skip(skip).limit(per_page)
+                searches = group_hub.find(bot_con).sort('$natural',-1).skip(skip).limit(per_page)
                 for i in searches:
                     t = {
                         'title':i['title'],
@@ -584,7 +588,7 @@ def list_group():
                     output.append(t)
             except:
                 output = []
-                searches = group_hub.find()
+                searches = group_hub.find(bot_con)
                 for i in searches:
                     t = {
                         'title':i['title'],
