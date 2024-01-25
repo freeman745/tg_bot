@@ -181,6 +181,76 @@ def preview_message_worker(bot_token, preview_code, message_content, button):
     preview_code_list.remove(preview_code)
 
 
+def group_info_update():
+    global db
+    bot_hub = db['bot_hub']
+    bot_con = {'status':'启用'}
+    searches = bot_hub.find(bot_con)
+    bot_list = []
+    group_hub = db['group_hub']
+    for i in searches:
+        token = i['token']
+        try:
+            bot = Bot(token)
+            updates = bot.get_updates()
+            group_chat_ids = list(set([update.message.chat_id for update in updates if update.message and update.message.chat.type == 'supergroup']))
+        except:
+            continue
+        bot_list.append(token)
+        for chat_id in group_chat_ids:
+            try:
+                # Get information about the chat (group)
+                query = {"chat_id": chat_id}
+                chat_info = bot.get_chat(chat_id)
+
+                # Access title and description from the chat_info object
+                group_title = str(chat_info.title)
+                group_description = str(chat_info.description)
+                group_type = str(chat_info.type)
+                member_count = str(bot.get_chat_member_count(chat_id))
+                admin_list = []
+                admin = bot.get_chat_administrators(chat_id=chat_id)
+                for j in admin:
+                    admin_list.append(j.to_dict())
+
+                t = {
+                    'title':group_title,
+                    'description':group_description,
+                    'type':group_type,
+                    'member_count':member_count,
+                    'chat_id':chat_id,
+                    'token':token
+                    }
+                group_ex = group_hub.find_one({'chat_id':t['chat_id']})
+                if group_ex:
+                    update_data = {"$set": t}
+                    group_hub.update_many(query, update_data, upsert=True)
+                else:
+                    random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
+                    t['group_index'] = random_number
+                    group_hub.insert_one(t)
+            except:
+                continue
+
+
+def get_kick_bot():
+    global db
+    group_hub = db['group_hub']
+    searches = group_hub.find()
+    for i in searches:
+        try:
+            token = i['token']
+            bot = Bot(token)
+            chat_id = i['chat_id']
+            try:
+                chat_info = bot.get_chat(chat_id)
+            except:
+                delete_condition = {'chat_id': chat_id, 'token':token}
+                group_hub.delete_many(delete_condition)
+        except:
+            continue
+
+
 # health check
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -506,8 +576,8 @@ def group_info():
         return jsonify(response)
 
 
-@app.route('/list_group', methods=['POST'])
-def list_group():
+@app.route('/old_list_group', methods=['POST'])
+def old_list_group():
     try:
         global db
         bot_hub = db['bot_hub']
@@ -602,6 +672,70 @@ def list_group():
                     output.append(t)
                 response = {'code': 200, 'error': 'success', 'group_list': output}
                 return jsonify(response)
+        response = {'code': 200, 'error': 'success', 'group_list': output, 'page_count': page_count, 'total_count': total}
+        return jsonify(response)
+    except Exception as e:
+        traceback.print_exc()
+        response = {'code': 307, 'error': str(e), 'group_list': []}
+        return jsonify(response)
+    
+
+@app.route('/list_group', methods=['POST'])
+def list_group():
+    worker_process = multiprocessing.Process(target=group_info_update)
+    worker_process.start()
+    worker_process = multiprocessing.Process(target=get_kick_bot)
+    worker_process.start()
+    global db
+    bot_hub = db['bot_hub']
+    bot_con = {'status':'启用'}
+    searches = bot_hub.find(bot_con)
+    bot_list = [i['token'] for i in searches]
+    group_hub = db['group_hub']
+    try:
+        output = []
+        data = request.json
+        bot_con = {'token':{'$in':bot_list}}
+        try:
+            page_index = int(data['page_index'])
+            per_page = int(data['per_page'])
+            skip = (page_index - 1) * per_page
+            total = group_hub.count_documents({})
+            page_count = math.ceil(total / per_page)
+            searches = group_hub.find(bot_con).sort('$natural',-1).skip(skip).limit(per_page)
+            for i in searches:
+                t = {
+                    'title':i['title'],
+                    'description':i['description'],
+                    'type':i['type'],
+                    'member_count':i['member_count'],
+                    'chat_id':i['chat_id'],
+                    'token':i['token'],
+                    'group_index':i['group_index']
+                    }
+                try:
+                    t['group_index'] = i['group_index']
+                except:
+                    random_number = 'G'+''.join([str(random.randrange(10)) for _ in range(11)])
+                    t['group_index'] = random_number
+                    group_hub.update_one({'_id': i['_id']}, {'$set': {'group_index':t['group_index']}})
+                output.append(t)
+        except:
+            output = []
+            searches = group_hub.find(bot_con)
+            for i in searches:
+                t = {
+                    'title':i['title'],
+                    'description':i['description'],
+                    'type':i['type'],
+                    'member_count':i['member_count'],
+                    'chat_id':i['chat_id'],
+                    'token':i['token'],
+                    'group_index':i['group_index']
+                    }
+                output.append(t)
+            response = {'code': 200, 'error': 'success', 'group_list': output}
+            return jsonify(response)
         response = {'code': 200, 'error': 'success', 'group_list': output, 'page_count': page_count, 'total_count': total}
         return jsonify(response)
     except Exception as e:
