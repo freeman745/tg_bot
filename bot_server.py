@@ -10,7 +10,9 @@ from captcha.image import ImageCaptcha
 import string
 import math
 import sys
+import hashlib
 import traceback
+
 
 
 app = Flask(__name__)
@@ -1217,7 +1219,9 @@ def register():
     if user_hub.find_one({'user_name': user_name}):
         response = {'code': 332, 'error': 'user name exist!'}
         return jsonify(response)
-    user_hub.insert_one({'user_name': user_name, 'password': password, 'isAdmin': isAdmin, 'status': status, 'id':id})
+    salt_password = password + "ce2bad4n"
+    encode_password = hashlib.md5(salt_password.encode()).hexdigest()
+    user_hub.insert_one({'user_name': user_name, 'password': encode_password, 'isAdmin': isAdmin, 'status': status, 'id':id})
     response = {'code': 200, 'error': 'success'}
 
     return jsonify(response)
