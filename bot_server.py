@@ -1302,8 +1302,10 @@ def edit_user():
             response = {'code': 344, 'error': 'can not edit super admin'}
             return jsonify(response)
 
+        salt_password = password + "ce2bad4n"
+        encode_password = hashlib.md5(salt_password.encode()).hexdigest()
         output['user_name'] = user_name
-        output['password'] = password
+        output['password'] = encode_password
         output['status'] = status
         setting = {"$set": output}
         result = user_hub.update_many(condition, setting)
